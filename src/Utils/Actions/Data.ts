@@ -99,7 +99,8 @@ export default [
   },
   {
     // --> Insert data
-    key: "insertData",
+    key: "insertObject",
+    // (requestId, type, data)
     action: (args, models, socket, socketInfo) => {
       models.objects.model.findOne({ key: args.type }).then(model => {
         if (model) {
@@ -152,24 +153,26 @@ export default [
           // Validate & save
           if (hasWriteAccess) {
             models.entries.model.findOne({ _id: args.objectId }).then(entry => {
-              const object = {
-                ...entry._doc
-              };
-
-              map(args.toChange, (v, k) => {
-                object.data[k] = v;
+              // Create the new object
+              const newObject = {};
+              map(entry._doc.data, (v, k) => {
+                if (args.toChange[k]) {
+                  newObject[k] = args.toChange[k];
+                } else {
+                  newObject[k] = v;
+                }
               });
 
               f.data
                 .validateData(
                   objectType,
-                  { ...args, object: object.data },
+                  { ...args, object: newObject },
                   models,
                   entry._doc
                 )
                 .then(
                   () => {
-                    entry.data = object.data;
+                    entry.data = newObject;
                     entry.markModified("data");
 
                     entry.save().then(() => {
@@ -192,6 +195,43 @@ export default [
               reason: "no-write-permission"
             });
           }
+        } else {
+          socket.emit(`receive-${args.requestId}`, {
+            success: false,
+            reason: "no-such-object"
+          });
+        }
+      });
+    }
+  },
+  {
+    // --> Delete data
+    // (requestId, objectId)
+    key: "deleteObject",
+    action: (args, models, socket, socketInfo) => {
+      models.entries.model.findOne({ _id: args.objectId }).then(object => {
+        if (object) {
+          models.objects.model.findOne({ key: object.objectId }).then(type => {
+            let hasDeleteAccess = false;
+            type.permissions.delete.map(permission => {
+              if (socketInfo.permissions.includes(permission)) {
+                hasDeleteAccess = true;
+              }
+            });
+
+            if (hasDeleteAccess) {
+              models.entries.model
+                .deleteOne({ _id: args.objectId })
+                .then(() => {
+                  socket.emit(`receive-${args.requestId}`, { success: true });
+                });
+            } else {
+              socket.emit(`receive-${args.requestId}`, {
+                success: false,
+                reason: "no-delete-permission"
+              });
+            }
+          });
         } else {
           socket.emit(`receive-${args.requestId}`, {
             success: false,

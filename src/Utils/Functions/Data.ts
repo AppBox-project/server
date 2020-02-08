@@ -33,15 +33,11 @@ export default {
                     })
                     .then(existingObj => {
                       if (existingObj) {
-                        if (oldObject) {
-                          // If this is an update, check if old and new are the same to prevent a duplicate notice
-                          if (oldObject.data[k] !== args.object[k]) {
-                            errors.push({ reason: "not-unique", field: k });
-                          }
-                        } else {
+                        if (existingObj.data[k] !== oldObject.data[k]) {
                           errors.push({ reason: "not-unique", field: k });
                         }
                       }
+
                       subresolve();
                     });
                 } else {
