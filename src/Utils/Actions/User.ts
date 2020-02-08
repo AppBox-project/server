@@ -45,6 +45,7 @@ export default [
                 success: true
               });
               socketInfo.permissions.push("known");
+              socketInfo.username = user.data.username;
               console.log(`Socket identified as ${user.data.username}`);
             } else {
               socket.emit(`receive-${args.requestId}`, {

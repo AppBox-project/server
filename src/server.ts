@@ -7,6 +7,7 @@ import { map } from "lodash";
 // Models
 require("./Utils/Models/Objects");
 require("./Utils/Models/Entries");
+require("./Utils/Models/AppPermissions");
 
 // Start up server
 const app = express();
@@ -33,6 +34,9 @@ db.once("open", function() {
       model: mongoose.model("Entries"),
       stream: db.collection("entries").watch(),
       listeners: {}
+    },
+    apppermissions: {
+      model: mongoose.model("AppPermissions")
     }
   };
 
@@ -55,7 +59,11 @@ db.once("open", function() {
 
     // Client interaction
     io.on("connection", (socket: any) => {
-      const socketInfo = { listeners: [], permissions: ["public"] };
+      const socketInfo = {
+        listeners: [],
+        permissions: ["public"],
+        username: undefined
+      };
       console.log("A user connected");
 
       actions.map(action => {

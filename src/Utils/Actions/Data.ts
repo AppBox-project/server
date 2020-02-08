@@ -220,11 +220,18 @@ export default [
             });
 
             if (hasDeleteAccess) {
-              models.entries.model
-                .deleteOne({ _id: args.objectId })
-                .then(() => {
-                  socket.emit(`receive-${args.requestId}`, { success: true });
+              if (socketInfo.username !== object.data.username) {
+                models.entries.model
+                  .deleteOne({ _id: args.objectId })
+                  .then(() => {
+                    socket.emit(`receive-${args.requestId}`, { success: true });
+                  });
+              } else {
+                socket.emit(`receive-${args.requestId}`, {
+                  success: false,
+                  reason: "delete-own-username"
                 });
+              }
             } else {
               socket.emit(`receive-${args.requestId}`, {
                 success: false,
