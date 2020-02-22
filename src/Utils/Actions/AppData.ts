@@ -16,37 +16,45 @@ export default [
         "data.id": args.appId
       });
       if (appInfo.data.root) {
-        // --> Root mode
-        // Find all objects
-        const types = await models.objects.model.find({ ...args.filter });
-        const response = [];
+        const returnData = async () => {
+          // --> Root mode
+          // Find all objects
+          const types = await models.objects.model.find({ ...args.filter });
+          const response = [];
 
-        // Do check user permissions though
-        types.map(objectType => {
-          let userPermission = false;
-          objectType.permissions.read.map(p => {
-            if (socketInfo.permissions.includes(p)) {
-              userPermission = true;
+          // Do check user permissions though
+          types.map(objectType => {
+            let userPermission = false;
+            objectType.permissions.read.map(p => {
+              if (socketInfo.permissions.includes(p)) {
+                userPermission = true;
+              }
+            });
+            if (userPermission) {
+              response.push(objectType);
             }
           });
-          if (userPermission) {
-            response.push(objectType);
+          if (response.length > 0) {
+            socket.emit(`receive-${args.requestId}`, {
+              success: true,
+              data: response
+            });
+          } else {
+            socket.emit(`receive-${args.requestId}`, {
+              success: false,
+              reason: "no-results"
+            });
           }
-        });
-        if (response.length > 0) {
-          socket.emit(`receive-${args.requestId}`, {
-            success: true,
-            data: response
-          });
-        } else {
-          socket.emit(`receive-${args.requestId}`, {
-            success: false,
-            reason: "no-results"
-          });
-        }
+        };
+
+        models.objects.listeners[args.requestId] = change => {
+          returnData();
+        };
+        socketInfo.listeners.push(args.requestId);
+        returnData();
+        console.log(`App object type request: ${args.requestId}`);
       } else {
         // Regular mode
-
         models.apppermissions.model
           .find({ appId: args.appId, ...args.filter })
           .then(appPermissions => {
