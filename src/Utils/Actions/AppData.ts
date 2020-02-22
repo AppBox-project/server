@@ -9,50 +9,85 @@ export default [
     // --> Creates listeners for objecttypes and returns data
     // (filter, requestId, appId)
     key: "appListensForObjectTypes",
-    action: (args, models, socket, socketInfo) => {
+    action: async (args, models, socket, socketInfo) => {
       // First map permissions for the app
-      models.apppermissions.model
-        .find({ appId: args.appId, ...args.filter })
-        .then(appPermissions => {
-          const promises = [];
-          const response = [];
-          map(appPermissions, appPermission => {
-            // Then map permissions for the user
-            if (appPermission.permissions.includes("read")) {
-              promises.push(
-                new Promise((resolve, reject) => {
-                  models.objects.model
-                    .findOne({ key: appPermission.objectId })
-                    .then(type => {
-                      type.permissions.read.map(permission => {
-                        if (socketInfo.permissions.includes(permission)) {
-                          // We have read access
-                          response.push(type);
-                        }
-                      });
-                      resolve();
-                    });
-                })
-              );
+      const appInfo = await models.entries.model.findOne({
+        objectId: "app",
+        "data.id": args.appId
+      });
+      if (appInfo.data.root) {
+        // --> Root mode
+        // Find all objects
+        const types = await models.objects.model.find({ ...args.filter });
+        const response = [];
+
+        // Do check user permissions though
+        types.map(objectType => {
+          let userPermission = false;
+          objectType.permissions.read.map(p => {
+            if (socketInfo.permissions.includes(p)) {
+              userPermission = true;
             }
           });
-
-          if (promises.length > 0) {
-            console.log(promises.length);
-
-            Promise.all(promises).then(() => {
-              socket.emit(`receive-${args.requestId}`, {
-                success: true,
-                data: response
-              });
-            });
-          } else {
-            socket.emit(`receive-${args.requestId}`, {
-              success: false,
-              reason: "no-results"
-            });
+          if (userPermission) {
+            response.push(objectType);
           }
         });
+        if (response.length > 0) {
+          socket.emit(`receive-${args.requestId}`, {
+            success: true,
+            data: response
+          });
+        } else {
+          socket.emit(`receive-${args.requestId}`, {
+            success: false,
+            reason: "no-results"
+          });
+        }
+      } else {
+        // Regular mode
+
+        models.apppermissions.model
+          .find({ appId: args.appId, ...args.filter })
+          .then(appPermissions => {
+            const promises = [];
+            const response = [];
+            map(appPermissions, appPermission => {
+              // Then map permissions for the user
+              if (appPermission.permissions.includes("read")) {
+                promises.push(
+                  new Promise((resolve, reject) => {
+                    models.objects.model
+                      .findOne({ key: appPermission.objectId })
+                      .then(type => {
+                        type.permissions.read.map(permission => {
+                          if (socketInfo.permissions.includes(permission)) {
+                            // We have read access
+                            response.push(type);
+                          }
+                        });
+                        resolve();
+                      });
+                  })
+                );
+              }
+            });
+
+            if (promises.length > 0) {
+              Promise.all(promises).then(() => {
+                socket.emit(`receive-${args.requestId}`, {
+                  success: true,
+                  data: response
+                });
+              });
+            } else {
+              socket.emit(`receive-${args.requestId}`, {
+                success: false,
+                reason: "no-results"
+              });
+            }
+          });
+      }
     }
   },
   {
