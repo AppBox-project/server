@@ -202,5 +202,46 @@ export default [
         });
       }
     }
+  },
+  {
+    key: "appDeletesObject",
+    action: async (args, models, socket, socketInfo) => {
+      if (
+        await Functions.appdata.checkUserObjectRights(
+          models,
+          socketInfo.permissions,
+          args.type,
+          "delete"
+        )
+      ) {
+        if (
+          await Functions.appdata.checkAppObjectRights(
+            models,
+            args.appId,
+            args.type,
+            "delete"
+          )
+        ) {
+          // Todo: sanatize input
+          models.entries.model
+            .deleteMany({ objectId: args.type, ...args.filter })
+            .then(() => {
+              socket.emit(`receive-${args.requestId}`, {
+                success: true
+              });
+            });
+        } else {
+          socket.emit(`receive-${args.requestId}`, {
+            success: false,
+            reason: "no-create-permission-app"
+          });
+        }
+      } else {
+        socket.emit(`receive-${args.requestId}`, {
+          success: false,
+          reason: "no-create-permission-user"
+        });
+      }
+    }
   }
 ];
