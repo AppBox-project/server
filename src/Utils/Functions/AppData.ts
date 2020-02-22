@@ -36,5 +36,12 @@ export default {
     } else {
       return false;
     }
+  },
+  checkAppRoot: async (models, appId: string) => {
+    const app = await models.entries.model.findOne({
+      objectId: "app",
+      "data.id": appId
+    });
+    return app.root;
   }
 };

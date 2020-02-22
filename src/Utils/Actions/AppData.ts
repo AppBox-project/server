@@ -288,5 +288,31 @@ export default [
         });
       }
     }
+  },
+  {
+    key: "appUpdatesModel",
+    action: async (args, models, socket, socketInfo) => {
+      if (Functions.appdata.checkAppRoot(models, args.appId)) {
+        const model = await models.objects.model.findOne({
+          key: args.type,
+          _id: args.id
+        });
+        map(args.newModel, (value, key) => {
+          model[key] = value;
+          console.log(key, value);
+        });
+
+        model.save().then(() => {
+          socket.emit(`receive-${args.requestId}`, {
+            success: true
+          });
+        });
+      } else {
+        socket.emit(`receive-${args.requestId}`, {
+          success: false,
+          reason: "app-not-root"
+        });
+      }
+    }
   }
 ];
