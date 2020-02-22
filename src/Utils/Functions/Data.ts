@@ -33,8 +33,12 @@ export default {
                     })
                     .then(existingObj => {
                       if (existingObj) {
-                        if (existingObj.data[k] !== oldObject.data[k]) {
+                        if (!oldObject) {
                           errors.push({ reason: "not-unique", field: k });
+                        } else {
+                          if (existingObj.data[k] !== oldObject.data[k]) {
+                            errors.push({ reason: "not-unique", field: k });
+                          }
                         }
                       }
 

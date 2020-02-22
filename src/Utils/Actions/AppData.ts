@@ -1,4 +1,5 @@
 import { remove, map } from "lodash";
+import Functions from "../Functions";
 
 // Todo sanitize filter input???
 // --> It may be possible to send something else than arrays which may be a way into the database
@@ -61,6 +62,145 @@ export default [
       remove(socketInfo.listeners, o => {
         return o === args.requestId;
       });
+    }
+  },
+  {
+    // --> Creates listeners for objecttypes and returns data
+    // (filter, requestId, appId)
+    key: "appListensForObjects",
+    action: (args, models, socket, socketInfo) => {
+      // First check read permission
+      models.apppermissions.model
+        .findOne({ appId: args.appId, objectId: args.type })
+        .then(permission => {
+          if (permission) {
+            if (permission.permissions.includes("read")) {
+              // App permissions are there
+              // Check user permissions
+              models.objects.model
+                .findOne({ key: args.type })
+                .then(objectType => {
+                  if (objectType) {
+                    let userPermission = false;
+                    objectType.permissions.read.map(p => {
+                      if (socketInfo.permissions.includes(p)) {
+                        userPermission = true;
+                      }
+                    });
+                    if (userPermission) {
+                      // App & user permissions -> Find the actual data
+                      // Find data
+                      const returnData = () => {
+                        models.entries.model
+                          .find({ objectId: args.type, ...args.filter })
+                          .then(objects => {
+                            socket.emit(`receive-${args.requestId}`, {
+                              success: true,
+                              data: objects
+                            });
+                          });
+                      };
+
+                      models.entries.listeners[args.requestId] = change => {
+                        returnData();
+                      };
+                      socketInfo.listeners.push(args.requestId);
+                      returnData();
+                      console.log(`App data request: ${args.requestId}`);
+                    } else {
+                      socket.emit(`receive-${args.requestId}`, {
+                        success: false,
+                        reason: "no-permission-user"
+                      });
+                    }
+                  } else {
+                    socket.emit(`receive-${args.requestId}`, {
+                      success: false,
+                      reason: "no-such-type"
+                    });
+                  }
+                });
+            } else {
+              socket.emit(`receive-${args.requestId}`, {
+                success: false,
+                reason: "no-permission-app"
+              });
+            }
+          } else {
+            socket.emit(`receive-${args.requestId}`, {
+              success: false,
+              reason: "no-permission-app"
+            });
+          }
+        });
+    }
+  },
+  {
+    // --> Cleans up listeners for object
+    key: "appUnlistensForObjects",
+    action: (args, models, socket, socketInfo) => {
+      console.log(`Cleaning up data request ${args.requestId}`);
+      delete models.objects.listeners[args.requestId];
+      remove(socketInfo.listeners, o => {
+        return o === args.requestId;
+      });
+    }
+  },
+  {
+    key: "appInsertsObject",
+    action: async (args, models, socket, socketInfo) => {
+      if (
+        await Functions.appdata.checkUserObjectRights(
+          models,
+          socketInfo.permissions,
+          args.type,
+          "create"
+        )
+      ) {
+        if (
+          await Functions.appdata.checkAppObjectRights(
+            models,
+            args.appId,
+            args.type,
+            "create"
+          )
+        ) {
+          // We have permission. Create object
+          const model = await models.objects.model.findOne({ key: args.type });
+          Functions.data.validateData(model, args, models, false).then(
+            () => {
+              new models.entries.model(
+                Functions.data.transformData(
+                  { data: args.object, objectId: args.type },
+                  model
+                )
+              )
+                .save()
+                .then(data => {
+                  socket.emit(`receive-${args.requestId}`, {
+                    success: true
+                  });
+                });
+            },
+            feedback => {
+              socket.emit(`receive-${args.requestId}`, {
+                success: false,
+                feedback
+              });
+            }
+          );
+        } else {
+          socket.emit(`receive-${args.requestId}`, {
+            success: false,
+            reason: "no-create-permission-app"
+          });
+        }
+      } else {
+        socket.emit(`receive-${args.requestId}`, {
+          success: false,
+          reason: "no-create-permission-user"
+        });
+      }
     }
   }
 ];

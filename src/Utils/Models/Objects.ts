@@ -9,6 +9,11 @@ mongoose.model(
     name: String,
     name_plural: String,
     fields: {},
-    permissions: { read: [String], write: [String], delete: [String] }
+    permissions: {
+      read: [String],
+      write: [String],
+      delete: [String],
+      create: [String]
+    }
   })
 );
