@@ -34,22 +34,24 @@ export default [
                     });
                 })
               );
-
-              if (promises.length > 0) {
-                Promise.all(promises).then(() => {
-                  socket.emit(`receive-${args.requestId}`, {
-                    success: true,
-                    data: response
-                  });
-                });
-              } else {
-                socket.emit(`receive-${args.requestId}`, {
-                  success: false,
-                  reason: "no-results"
-                });
-              }
             }
           });
+
+          if (promises.length > 0) {
+            console.log(promises.length);
+
+            Promise.all(promises).then(() => {
+              socket.emit(`receive-${args.requestId}`, {
+                success: true,
+                data: response
+              });
+            });
+          } else {
+            socket.emit(`receive-${args.requestId}`, {
+              success: false,
+              reason: "no-results"
+            });
+          }
         });
     }
   },
