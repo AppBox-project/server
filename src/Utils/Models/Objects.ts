@@ -8,6 +8,7 @@ mongoose.model(
     key: String,
     name: String,
     name_plural: String,
+    overviews: {},
     fields: {},
     permissions: {
       read: [String],

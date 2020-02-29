@@ -299,7 +299,6 @@ export default [
         });
         map(args.newModel, (value, key) => {
           model[key] = value;
-          console.log(key, value);
         });
 
         model.save().then(() => {
