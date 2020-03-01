@@ -12,9 +12,11 @@ mongoose.model(
     fields: {},
     permissions: {
       read: [String],
+      create: [String],
+      modifyOwn: [String],
       write: [String],
       delete: [String],
-      create: [String]
+      deleteOwn: [String]
     }
   })
 );

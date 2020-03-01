@@ -154,13 +154,9 @@ export default [
           if (hasWriteAccess) {
             models.entries.model.findOne({ _id: args.objectId }).then(entry => {
               // Create the new object
-              const newObject = {};
-              map(entry._doc.data, (v, k) => {
-                if (args.toChange[k]) {
-                  newObject[k] = args.toChange[k];
-                } else {
-                  newObject[k] = v;
-                }
+              const newObject = entry._doc.data;
+              map(args.toChange, (v, k) => {
+                newObject[k] = args.toChange[k];
               });
 
               f.data
