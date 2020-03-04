@@ -3,15 +3,17 @@ export default {
     models,
     permissions,
     object,
-    permissionType: "create" | "write" | "read" | "delete"
+    permissionTypes: string[] // "read" | "create" | "modifyOwn" | "write" | "delete" | "deleteOwn"
   ) => {
     const type = await models.objects.model.findOne({ key: object });
 
     let hasPermission = false;
-    type.permissions[permissionType].map(permission => {
-      if (permissions.includes(permission)) {
-        hasPermission = true;
-      }
+    permissionTypes.map(permissionType => {
+      type.permissions[permissionType].map(permission => {
+        if (permissions.includes(permission)) {
+          hasPermission = true;
+        }
+      });
     });
 
     return hasPermission;
