@@ -47,7 +47,7 @@ db.once("open", function() {
     });
   });
   models.entries.stream.on("change", change => {
-    map(models.entries.listeners, listener => {
+    map(models.entries.listeners, (listener, key) => {
       listener(change);
     });
   });

@@ -102,7 +102,6 @@ export default [
     // --> Cleans up listeners for object
     key: "appUnlistensForObjectTypes",
     action: (args, models, socket, socketInfo) => {
-      console.log(`Cleaning up data request ${args.requestId}`);
       delete models.objects.listeners[args.requestId];
       remove(socketInfo.listeners, o => {
         return o === args.requestId;
@@ -185,7 +184,7 @@ export default [
     key: "appUnlistensForObjects",
     action: (args, models, socket, socketInfo) => {
       console.log(`Cleaning up data request ${args.requestId}`);
-      delete models.objects.listeners[args.requestId];
+      delete models.entries.listeners[args.requestId];
       remove(socketInfo.listeners, o => {
         return o === args.requestId;
       });
