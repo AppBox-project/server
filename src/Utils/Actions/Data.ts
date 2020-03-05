@@ -115,6 +115,7 @@ export default [
               )
                 .save()
                 .then(data => {
+                  // Todo: postprocess (formulas)
                   socket.emit(`receive-${args.requestId}`, {
                     success: true
                   });
@@ -167,9 +168,16 @@ export default [
                   entry._doc
                 )
                 .then(
-                  () => {
+                  async () => {
                     entry.data = newObject;
                     entry.markModified("data");
+
+                    // Post process
+                    entry = await f.formulas.postProcessCaculcateFormulas(
+                      entry,
+                      args.toChange,
+                      objectType
+                    );
 
                     entry.save().then(() => {
                       socket.emit(`receive-${args.requestId}`, {
