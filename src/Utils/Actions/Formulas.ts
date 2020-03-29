@@ -11,7 +11,7 @@ export default [
         {},
         { sort: { created_at: -1 } }
       );
-      const response = f.formulas.parseFormula(
+      const response = f.formulas.parseFormulaSample(
         args.formula,
         sampleEntry._doc.data
       );
@@ -114,8 +114,13 @@ export default [
               currentObj.markModified("fields");
             }
           }
+
+          // Also locally register what the formula depends on
         });
 
+        currentObj.fields[args.fieldId].typeArgs.formulaDependencies =
+          args.dependencies;
+        currentObj.markModified("fields");
         currentObj.save();
       } else {
         socket.emit(`receive-${args.requestId}`, {
@@ -123,6 +128,28 @@ export default [
           reason: "restricted-to-core-app"
         });
       }
+    }
+  },
+  {
+    key: "testFormula",
+    action: async (args, models, socket, socketInfo) => {
+      const sampleEntry = await models.entries.model.findOne(
+        { objectId: args.context },
+        {},
+        { sort: { created_at: -1 } }
+      );
+
+      f.formulas
+        .parseFormula(
+          models,
+          args.context,
+          sampleEntry._id,
+          args.formula,
+          args.dependencies
+        )
+        .then(result => {
+          socket.emit(`receive-${args.requestId}`, result);
+        });
     }
   }
 ];

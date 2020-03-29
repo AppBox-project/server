@@ -176,7 +176,8 @@ export default [
                     entry = await f.formulas.postProcessCaculcateFormulas(
                       entry,
                       args.toChange,
-                      objectType
+                      objectType,
+                      models
                     );
 
                     entry.save().then(() => {
