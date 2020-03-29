@@ -133,23 +133,24 @@ export default [
   {
     key: "testFormula",
     action: async (args, models, socket, socketInfo) => {
+      // Because this is a test, fetch a sample ID
       const sampleEntry = await models.entries.model.findOne(
         { objectId: args.context },
         {},
         { sort: { created_at: -1 } }
       );
 
-      f.formulas
-        .parseFormula(
-          models,
-          args.context,
-          sampleEntry._id,
+      // Process formula and respond
+      socket.emit(
+        `receive-${args.requestId}`,
+        await f.formulas.calculateFormulaFromId(
           args.formula,
-          args.dependencies
+          sampleEntry._id,
+          args.dependencies,
+          args.context,
+          models
         )
-        .then(result => {
-          socket.emit(`receive-${args.requestId}`, result);
-        });
+      );
     }
   }
 ];
