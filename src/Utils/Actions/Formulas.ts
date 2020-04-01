@@ -22,106 +22,75 @@ export default [
   {
     key: "setFormulaDependencies",
     action: async (args, models, socket, socketInfo) => {
+      // This action is for saving of a formula. It marks dependencies in the database.
       if (args.appId === "object-manager") {
-        const currentObj = await models.objects.model.findOne({
-          key: args.context
-        });
+        args.dependencies.map(async dependency => {
+          // Per dependency part: create a map
+          dependency
+            .split(".")
+            .reduce(async (previousPromise, pathPart) => {
+              let newData = await previousPromise;
+              if (newData.length < 1) {
+                // The first object starts from context
+                const subObject = await models.objects.model.findOne({
+                  key: args.context
+                });
 
-        // Map dependencies
-        // All fields that this forula depend on will get a tag that they are a dependency.
-        // This will cause the formulafield to be updated once a dependency is updated
-        args.dependencies.map(async dep => {
-          if (dep.match("_r")) {
-            // Relationship dep
-            if (dep.match("[.]")) {
-              // Remote relationship dep
-              const remoteModels = { [args.context]: currentObj };
-              const fieldId = `${args.context}.${args.fieldId}`;
-              console.log(`Logging remote relationship ${dep} for ${fieldId}`);
-              const path = dep.split(".");
-              let modelName = args.context; // First model is always the context for the formula
-              for (let x = 0; x < path.length; x++) {
-                if (!remoteModels[modelName]) {
-                  console.log(`Remotemodels containsn't ${modelName}`); // This shouldn't happen since we scan our models ahead of time
-                }
+                newData.push({
+                  markAsDependency: {
+                    path: pathPart.replace(new RegExp("\\_r$"), ""),
+                    key: args.context
+                  },
+                  nextObject:
+                    subObject.fields[pathPart.replace(new RegExp("\\_r$"), "")]
+                      .typeArgs.relationshipTo
+                });
+              } else {
+                // Every next one from the result type of the previous one.
+                const subObject = await models.objects.model.findOne({
+                  key: newData[newData.length - 1].nextObject
+                });
 
-                if (path[x].match("_r")) {
-                  const pathPart = path[x].substr(0, path[x].length - 2);
+                newData.push({
+                  markAsDependency: {
+                    path: pathPart.replace(new RegExp("\\_r$"), ""),
+                    key: newData[newData.length - 1].nextObject
+                  },
+                  nextObject: pathPart.match("_r")
+                    ? subObject.fields[
+                        pathPart.replace(new RegExp("\\_r$"), "")
+                      ].typeArgs.relationshipTo
+                    : null
+                });
+              }
 
-                  // Find next model
-                  const nextModelId =
-                    remoteModels[modelName].fields[pathPart].typeArgs
-                      .relationshipTo;
-                  if (!remoteModels[nextModelId]) {
-                    remoteModels[
-                      nextModelId
-                    ] = await models.objects.model.findOne({
-                      key: nextModelId
-                    });
+              return newData;
+            }, Promise.resolve([]))
+            .then(modelList => {
+              modelList.map(async dep => {
+                const formula = await models.objects.model.findOne({
+                  key: dep.markAsDependency.key
+                });
+                if (formula.fields[dep.markAsDependency.path].dependencyFor) {
+                  if (
+                    !formula.fields[
+                      dep.markAsDependency.path
+                    ].dependencyFor.includes(`${args.context}.${args.fieldId}`)
+                  ) {
+                    formula.fields[
+                      dep.markAsDependency.path
+                    ].dependencyFor.push(`${args.context}.${args.fieldId}`);
                   }
-
-                  // Now update the current model
-                  const currentDep =
-                    remoteModels[modelName].fields[pathPart].dependencyFor ||
-                    [];
-                  if (!currentDep.includes(fieldId)) {
-                    currentDep.push(fieldId);
-                  }
-                  remoteModels[modelName].fields[
-                    pathPart
-                  ].dependencyFor = currentDep;
-
-                  modelName = nextModelId;
                 } else {
-                  const currentDep =
-                    remoteModels[modelName].fields[path[x]].dependencyFor || [];
-                  if (!currentDep.includes(fieldId)) {
-                    currentDep.push(fieldId);
-                  }
-                  remoteModels[modelName].fields[
-                    path[x]
-                  ].dependencyFor = currentDep;
+                  formula.fields[dep.markAsDependency.path].dependencyFor = [
+                    `${args.context}.${args.fieldId}`
+                  ];
                 }
-              }
-
-              // Now that we've updated multiple models with their field dependencies, let's save these new models
-              map(remoteModels, (newModel, key) => {
-                if (key !== args.context) {
-                  // Local dependencies set elsewhere
-                  newModel.markModified("fields");
-                  newModel.save();
-                }
+                formula.markModified("fields");
+                formula.save();
               });
-            } else {
-              // Locale relationship dep
-              const newDep = dep.replace("_r", "");
-
-              const currentDep = currentObj.fields[newDep].dependencyFor || [];
-              if (!currentDep.includes(args.fieldId)) {
-                currentDep.push(args.fieldId);
-
-                currentObj.fields[newDep].dependencyFor = currentDep;
-                currentObj.markModified("fields");
-              }
-            }
-          } else {
-            // Local dep
-            const currentDep = currentObj.fields[dep].dependencyFor || [];
-            if (!currentDep.includes(args.fieldId)) {
-              currentDep.push(args.fieldId);
-
-              currentObj.fields[dep].dependencyFor = currentDep;
-              currentObj.markModified("fields");
-            }
-          }
-
-          // Also locally register what the formula depends on
+            });
         });
-
-        currentObj.fields[args.fieldId].typeArgs.formulaDependencies =
-          args.dependencies;
-        currentObj.markModified("fields");
-        currentObj.save();
       } else {
         socket.emit(`receive-${args.requestId}`, {
           success: false,
