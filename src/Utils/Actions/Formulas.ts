@@ -26,70 +26,91 @@ export default [
       if (args.appId === "object-manager") {
         args.dependencies.map(async dependency => {
           // Per dependency part: create a map
-          dependency
-            .split(".")
-            .reduce(async (previousPromise, pathPart) => {
-              let newData = await previousPromise;
-              if (newData.length < 1) {
-                // The first object starts from context
-                const subObject = await models.objects.model.findOne({
-                  key: args.context
-                });
-
-                newData.push({
-                  markAsDependency: {
-                    path: pathPart.replace(new RegExp("\\_r$"), ""),
+          if (dependency.match("\\.")) {
+            dependency
+              .split(".")
+              .reduce(async (previousPromise, pathPart) => {
+                let newData = await previousPromise;
+                if (newData.length < 1) {
+                  // The first object starts from context
+                  const subObject = await models.objects.model.findOne({
                     key: args.context
-                  },
-                  nextObject:
-                    subObject.fields[pathPart.replace(new RegExp("\\_r$"), "")]
-                      .typeArgs.relationshipTo
-                });
-              } else {
-                // Every next one from the result type of the previous one.
-                const subObject = await models.objects.model.findOne({
-                  key: newData[newData.length - 1].nextObject
-                });
+                  });
 
-                newData.push({
-                  markAsDependency: {
-                    path: pathPart.replace(new RegExp("\\_r$"), ""),
-                    key: newData[newData.length - 1].nextObject
-                  },
-                  nextObject: pathPart.match("_r")
-                    ? subObject.fields[
+                  newData.push({
+                    markAsDependency: {
+                      path: pathPart.replace(new RegExp("\\_r$"), ""),
+                      key: args.context
+                    },
+                    nextObject:
+                      subObject.fields[
                         pathPart.replace(new RegExp("\\_r$"), "")
                       ].typeArgs.relationshipTo
-                    : null
-                });
-              }
-
-              return newData;
-            }, Promise.resolve([]))
-            .then(modelList => {
-              modelList.map(async dep => {
-                const formula = await models.objects.model.findOne({
-                  key: dep.markAsDependency.key
-                });
-                if (formula.fields[dep.markAsDependency.path].dependencyFor) {
-                  if (
-                    !formula.fields[
-                      dep.markAsDependency.path
-                    ].dependencyFor.includes(`${args.context}.${args.fieldId}`)
-                  ) {
-                    formula.fields[
-                      dep.markAsDependency.path
-                    ].dependencyFor.push(`${args.context}.${args.fieldId}`);
-                  }
+                  });
                 } else {
-                  formula.fields[dep.markAsDependency.path].dependencyFor = [
-                    `${args.context}.${args.fieldId}`
-                  ];
+                  // Every next one from the result type of the previous one.
+                  const subObject = await models.objects.model.findOne({
+                    key: newData[newData.length - 1].nextObject
+                  });
+
+                  newData.push({
+                    markAsDependency: {
+                      path: pathPart.replace(new RegExp("\\_r$"), ""),
+                      key: newData[newData.length - 1].nextObject
+                    },
+                    nextObject: pathPart.match("_r")
+                      ? subObject.fields[
+                          pathPart.replace(new RegExp("\\_r$"), "")
+                        ].typeArgs.relationshipTo
+                      : null
+                  });
                 }
-                formula.markModified("fields");
-                formula.save();
+
+                return newData;
+              }, Promise.resolve([]))
+              .then(modelList => {
+                modelList.map(async dep => {
+                  const formula = await models.objects.model.findOne({
+                    key: dep.markAsDependency.key
+                  });
+                  if (formula.fields[dep.markAsDependency.path].dependencyFor) {
+                    if (
+                      !formula.fields[
+                        dep.markAsDependency.path
+                      ].dependencyFor.includes(
+                        `${args.context}.${args.fieldId}`
+                      )
+                    ) {
+                      formula.fields[
+                        dep.markAsDependency.path
+                      ].dependencyFor.push(`${args.context}.${args.fieldId}`);
+                    }
+                  } else {
+                    formula.fields[dep.markAsDependency.path].dependencyFor = [
+                      `${args.context}.${args.fieldId}`
+                    ];
+                  }
+                  formula.markModified("fields");
+                  formula.save();
+                });
               });
+          } else {
+            const formula = await models.objects.model.findOne({
+              key: args.context
             });
+
+            if (formula.fields[dependency].dependencyFor) {
+              if (
+                !formula.fields[dependency].dependencyFor.includes(args.fieldId)
+              ) {
+                formula.fields[dependency].dependencyFor.push(args.fieldId);
+              }
+            } else {
+              formula.fields[dependency].dependencyFor = [args.fieldId];
+            }
+            formula.markModified("fields");
+            formula.save();
+          }
         });
       } else {
         socket.emit(`receive-${args.requestId}`, {
