@@ -46,6 +46,8 @@ export default {
           // Done
           // Todo -> this currently happens once dependency. Lift out to promise reduction
           resolve(nunjucks.renderString(formula, data));
+        } else {
+          resolve(nunjucks.renderString(formula, data));
         }
       });
     });
