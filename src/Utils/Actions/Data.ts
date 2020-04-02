@@ -173,14 +173,15 @@ export default [
                     entry.markModified("data");
 
                     // Post process
-                    entry = await f.formulas.postProcessCaculcateFormulas(
-                      entry,
-                      args.toChange,
-                      objectType,
-                      models
-                    );
 
                     entry.save().then(() => {
+                      entry = f.formulas.postSave(
+                        entry,
+                        args.toChange,
+                        objectType,
+                        models
+                      );
+
                       socket.emit(`receive-${args.requestId}`, {
                         success: true
                       });

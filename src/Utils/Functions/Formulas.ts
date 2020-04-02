@@ -4,54 +4,55 @@ import { map, reverse, set, get } from "lodash";
 // Todo nunjucks issues a warning about code injection
 // Not too worried about that since only the admin can create formula fields
 
-export default {
-  calculateFormulaFromId: async (
-    formula,
-    contextId,
-    dependencies,
-    context,
-    models
-  ) => {
-    // Step 1: fetch basemodel
-    return new Promise(async (resolve, reject) => {
-      let data = await models.entries.model.findOne({ _id: contextId });
-      data = data.data;
+const calculateFormulaFromId = async (
+  formula,
+  contextId,
+  dependencies,
+  models
+) => {
+  // Step 1: fetch basemodel
+  return new Promise(async (resolve, reject) => {
+    let data = await models.entries.model.findOne({ _id: contextId });
+    data = data.data;
 
-      dependencies.map(async dependency => {
-        if (dependency.match("\\.")) {
-          // Levelled dependency
-          let path = "";
-          data = await dependency
-            .split(".")
-            .reduce(async (previousPromise, pathPart) => {
-              let newData = await previousPromise;
-              if (newData.length < 1) newData = data; // Only on first run
+    dependencies.map(async dependency => {
+      if (dependency.match("\\.")) {
+        // Levelled dependency
+        let path = "";
+        data = await dependency
+          .split(".")
+          .reduce(async (previousPromise, pathPart) => {
+            let newData = await previousPromise;
+            if (newData.length < 1) newData = data; // Only on first run
 
-              // Find path
-              path = path + pathPart;
-              if (path.match("_r")) path += ".";
-              const subPath = path.replace(new RegExp("\\.$"), "");
-              const idPath = subPath.replace(new RegExp("\\_r$"), "");
+            // Find path
+            path = path + pathPart;
+            if (path.match("_r")) path += ".";
+            const subPath = path.replace(new RegExp("\\.$"), "");
+            const idPath = subPath.replace(new RegExp("\\_r$"), "");
 
-              // Follow the relationships and add the data
-              if (pathPart.match("_r")) {
-                const _id = get(data, idPath);
-                const subData = await models.entries.model.findOne({ _id });
-                newData = set(newData, subPath, subData.data);
-              }
+            // Follow the relationships and add the data
+            if (pathPart.match("_r")) {
+              const _id = get(data, idPath);
+              const subData = await models.entries.model.findOne({ _id });
+              newData = set(newData, subPath, subData.data);
+            }
 
-              return newData;
-            }, Promise.resolve([]));
+            return newData;
+          }, Promise.resolve([]));
 
-          // Done
-          // Todo -> this currently happens once dependency. Lift out to promise reduction
-          resolve(nunjucks.renderString(formula, data));
-        } else {
-          resolve(nunjucks.renderString(formula, data));
-        }
-      });
+        // Done
+        // Todo -> this currently happens once per dependency. Lift out to promise reduction
+        resolve(nunjucks.renderString(formula, data));
+      } else {
+        resolve(nunjucks.renderString(formula, data));
+      }
     });
-  },
+  });
+};
+
+export default {
+  calculateFormulaFromId,
   parseFormulaSample: (formula, data) => {
     return nunjucks.renderString(formula, data);
   },
@@ -150,6 +151,35 @@ export default {
           resolve(parseFormula(formula, object));
         }
       });
+    });
+  },
+  postSave: (entry, changes, model, models) => {
+    // Step 1: see if any dependencies need updating
+    map(changes, (change, field) => {
+      if (model.fields[field].dependencyFor) {
+        // One of the fields that changed is a dependency field
+        model.fields[field].dependencyFor.map(async depFor => {
+          console.log(depFor);
+
+          if (depFor.match("\\.")) {
+            // Option 1: remote dependency
+            // This could theoretically affect thousands of records, therefore:
+            // figure out the impact and create a task for the seperate service to handle
+          } else {
+            // Option 2: local dependency
+            // Calculate directly because of low impact
+            entry.data[depFor] = await calculateFormulaFromId(
+              model.fields[depFor].typeArgs.formula,
+              entry._id,
+              model.fields[depFor].typeArgs.dependencies,
+              models
+            );
+
+            entry.markModified("data");
+            entry.save();
+          }
+        });
+      }
     });
   }
 };
