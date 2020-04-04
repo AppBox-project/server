@@ -7,6 +7,6 @@ mongoose.model(
   new Schema({
     key: String,
     objectId: String,
-    data: mongoose.Mixed
+    data: Schema.Types.Mixed,
   })
 );

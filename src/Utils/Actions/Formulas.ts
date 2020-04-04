@@ -17,61 +17,23 @@ export default [
       );
 
       socket.emit(`receive-${args.requestId}`, response);
-    }
+    },
   },
   {
     key: "setFormulaDependencies",
     action: async (args, models, socket, socketInfo) => {
       // This action is for saving of a formula. It marks dependencies in the database.
       if (args.appId === "object-manager") {
-        args.dependencies.map(async dependency => {
+        args.dependencies.map(async (dependency) => {
           // Per dependency part: create a map
           if (dependency.match("\\.")) {
-            dependency
-              .split(".")
-              .reduce(async (previousPromise, pathPart) => {
-                let newData = await previousPromise;
-                if (newData.length < 1) {
-                  // The first object starts from context
-                  const subObject = await models.objects.model.findOne({
-                    key: args.context
-                  });
-
-                  newData.push({
-                    markAsDependency: {
-                      path: pathPart.replace(new RegExp("\\_r$"), ""),
-                      key: args.context
-                    },
-                    nextObject:
-                      subObject.fields[
-                        pathPart.replace(new RegExp("\\_r$"), "")
-                      ].typeArgs.relationshipTo
-                  });
-                } else {
-                  // Every next one from the result type of the previous one.
-                  const subObject = await models.objects.model.findOne({
-                    key: newData[newData.length - 1].nextObject
-                  });
-
-                  newData.push({
-                    markAsDependency: {
-                      path: pathPart.replace(new RegExp("\\_r$"), ""),
-                      key: newData[newData.length - 1].nextObject
-                    },
-                    nextObject: pathPart.match("_r")
-                      ? subObject.fields[
-                          pathPart.replace(new RegExp("\\_r$"), "")
-                        ].typeArgs.relationshipTo
-                      : null
-                  });
-                }
-
-                return newData;
-              }, Promise.resolve([]))
-              .then(modelList => {
-                modelList.map(async dep => {
+            f.formulas
+              .dependencyToMap(dependency, models, args.context)
+              .then((modelList) => {
+                //@ts-ignore
+                modelList.map(async (dep) => {
                   const formula = await models.objects.model.findOne({
-                    key: dep.markAsDependency.key
+                    key: dep.markAsDependency.key,
                   });
                   if (formula.fields[dep.markAsDependency.path].dependencyFor) {
                     if (
@@ -87,7 +49,7 @@ export default [
                     }
                   } else {
                     formula.fields[dep.markAsDependency.path].dependencyFor = [
-                      `${args.context}.${args.fieldId}`
+                      `${args.context}.${args.fieldId}`,
                     ];
                   }
                   formula.markModified("fields");
@@ -96,7 +58,7 @@ export default [
               });
           } else {
             const formula = await models.objects.model.findOne({
-              key: args.context
+              key: args.context,
             });
 
             if (formula.fields[dependency].dependencyFor) {
@@ -115,10 +77,10 @@ export default [
       } else {
         socket.emit(`receive-${args.requestId}`, {
           success: false,
-          reason: "restricted-to-core-app"
+          reason: "restricted-to-core-app",
         });
       }
-    }
+    },
   },
   {
     key: "testFormula",
@@ -137,10 +99,9 @@ export default [
           args.formula,
           sampleEntry._id,
           args.dependencies,
-          args.context,
           models
         )
       );
-    }
-  }
+    },
+  },
 ];
