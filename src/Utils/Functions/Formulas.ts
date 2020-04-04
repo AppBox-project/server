@@ -225,7 +225,8 @@ export default {
               name: `Recalculate formula ${rModelId}.${rFieldId}`,
               description: `Triggered by a change to ${entry._id}`,
               when: "asap",
-              action: "calculate",
+              action: "formula-calculate",
+              done: false,
               arguments: undefined,
             };
 
@@ -296,7 +297,11 @@ export default {
 
               // Done, we have a list of impacted dependencies
               // Create a new task.
-              newTask.arguments = { objects: impactedFormulas };
+              newTask.arguments = {
+                objects: impactedFormulas,
+                field: rFieldId,
+                model: rModelId,
+              };
               console.log(
                 await models.entries.model.create({
                   objectId: "system-task",
