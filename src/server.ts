@@ -11,42 +11,43 @@ require("./Utils/Models/AppPermissions");
 
 // Start up server
 const app = express();
-app.set("port", process.env.PORT || config.port);
-app.use(express.static("../../Files/Public"));
+app.set("port", config.port);
+app.use("/public", express.static("../../Files/Public"));
+app.use(express.static("../Client/build"));
 let http = require("http").Server(app);
 let io = require("socket.io")(http);
 
-mongoose.connect(`mongodb://localhost/AppBox`, {
+mongoose.connect(`mongodb://127.0.0.1/AppBox`, {
   useNewUrlParser: true,
-  useUnifiedTopology: true
+  useUnifiedTopology: true,
 });
 var db = mongoose.connection;
 db.on("error", console.error.bind(console, "Connection error:"));
-db.once("open", function() {
+db.once("open", function () {
   // Models
   const models = {
     objects: {
       model: mongoose.model("Objects"),
       stream: db.collection("objects").watch(),
-      listeners: {}
+      listeners: {},
     },
     entries: {
       model: mongoose.model("Entries"),
       stream: db.collection("entries").watch(),
-      listeners: {}
+      listeners: {},
     },
     apppermissions: {
-      model: mongoose.model("AppPermissions")
-    }
+      model: mongoose.model("AppPermissions"),
+    },
   };
 
   // Change streams
-  models.objects.stream.on("change", change => {
-    map(models.objects.listeners, listener => {
+  models.objects.stream.on("change", (change) => {
+    map(models.objects.listeners, (listener) => {
       listener(change);
     });
   });
-  models.entries.stream.on("change", change => {
+  models.entries.stream.on("change", (change) => {
     map(models.entries.listeners, (listener, key) => {
       listener(change);
     });
@@ -62,18 +63,18 @@ db.once("open", function() {
       const socketInfo = {
         listeners: [],
         permissions: ["public"],
-        username: undefined
+        username: undefined,
       };
       console.log("A user connected");
 
-      actions.map(action => {
-        socket.on(action.key, args => {
+      actions.map((action) => {
+        socket.on(action.key, (args) => {
           action.action(args, models, socket, socketInfo);
         });
       });
 
       socket.on("disconnect", () => {
-        socketInfo.listeners.map(listener => {
+        socketInfo.listeners.map((listener) => {
           delete models.objects.listeners[listener];
           delete models.entries.listeners[listener];
           console.log(
