@@ -21,8 +21,8 @@
   "author": "Vic van Cooten",
   "license": "MIT",
   "scripts": {
-    "killDb": "mongod --shutdown --dbpath /AppBox/System/Database",
-    "prepareDb": "mongod --replSet 'rs0' --dbpath /AppBox/System/Database && mongo --eval 'rs.initiate()'",
+    "killDb": "mongod --shutdown --dbpath /home/Duveaux/AppBox/System/Database",
+    "prepareDb": "mongod --replSet 'rs0' --dbpath ~/AppBox/System/Database && mongo --eval 'rs.initiate()'",
     "build": "tsc",
     "watch-ts": "tsc -w",
     "watch-node": "nodemon dist/server.js",
