@@ -22,11 +22,11 @@
   "license": "MIT",
   "scripts": {
     "killDb": "mongod --shutdown --dbpath /AppBox/System/Database",
-    "prepareDb": "mongod --replSet 'rs0' --dbpath /AppBox/System/Database --bind_ip localhost",
+    "prepareDb": "mongod --replSet 'rs0' --dbpath /AppBox/System/Database && mongo --eval 'rs.initiate()'",
     "build": "tsc",
     "watch-ts": "tsc -w",
     "watch-node": "nodemon dist/server.js",
-    "start": "concurrently -k -p \"[{name}]\" -n \"TypeScript, Node\" -c \"yello.bold, cyan.bold\"  \"yarn prepareDb\" \"yarn run watch-ts\" \"yarn run watch-node\"",
+    "start": "concurrently -k -p \"[{name}]\" -n \"TypeScript, Node\" -c \"yello.bold, cyan.bold\"  \"yarn run watch-ts\" \"yarn run watch-node\"",
     "test": "mocha -r ts-node/register src/**/*.spec.ts"
   }
 }

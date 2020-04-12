@@ -17,10 +17,15 @@ app.use(express.static("../Client/build"));
 let http = require("http").Server(app);
 let io = require("socket.io")(http);
 
-mongoose.connect(`mongodb://127.0.0.1/AppBox`, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+mongoose.connect(
+  `mongodb://${
+    process.env.DBURL ? process.env.DBURL : "192.168.0.2:27017"
+  }/AppBox`,
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  }
+);
 var db = mongoose.connection;
 db.on("error", console.error.bind(console, "Connection error:"));
 db.once("open", function () {
