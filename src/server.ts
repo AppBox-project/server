@@ -49,11 +49,13 @@ db.once("open", function () {
   // Change streams
   models.objects.stream.on("change", (change) => {
     map(models.objects.listeners, (listener) => {
+      //@ts-ignore
       listener(change);
     });
   });
   models.entries.stream.on("change", (change) => {
     map(models.entries.listeners, (listener, key) => {
+      //@ts-ignore
       listener(change);
     });
   });

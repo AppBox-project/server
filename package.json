@@ -12,7 +12,8 @@
     "mongoose": "^5.8.10",
     "nodemon": "^2.0.2",
     "nunjucks": "^3.2.0",
-    "socket.io": "^2.3.0"
+    "socket.io": "^2.3.0",
+    "typescript": "^3.8.3"
   },
   "name": "appbox-server",
   "version": "0.0.1",

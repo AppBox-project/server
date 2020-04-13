@@ -1,7 +1,3 @@
-const mongoose = require("mongoose");
-
-const { Schema } = mongoose;
-
 mongoose.model(
   "Entries",
   new Schema({

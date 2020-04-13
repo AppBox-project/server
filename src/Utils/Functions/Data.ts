@@ -29,9 +29,9 @@ export default {
                   models.entries.model
                     .findOne({
                       objectId: args.type,
-                      [sk]: args.object[k]
+                      [sk]: args.object[k],
                     })
-                    .then(existingObj => {
+                    .then((existingObj) => {
                       if (existingObj) {
                         if (!oldObject) {
                           errors.push({ reason: "not-unique", field: k });
@@ -52,13 +52,14 @@ export default {
                 // Check 3
                 if (field.validations) {
                   if (args.object[k]) {
-                    field.validations.map(validation => {
+                    field.validations.map((validation) => {
                       let rule = validation;
                       let ruleArgs = "";
                       if (validation.includes("(")) {
                         rule = validation.split("(")[0];
                         ruleArgs = validation.split("(")[1].split(")")[0];
                         if (ruleArgs.includes(",")) {
+                          //@ts-ignore
                           ruleArgs = ruleArgs.split(",");
                         }
                       }
@@ -69,7 +70,7 @@ export default {
                           if (!re.test(args.object[k])) {
                             errors.push({
                               reason: "no-email",
-                              field: k
+                              field: k,
                             });
                           }
 
@@ -80,7 +81,7 @@ export default {
                             errors.push({
                               reason: "too-short",
                               minLength: ruleArgs,
-                              field: k
+                              field: k,
                             });
                           }
                           break;
@@ -95,7 +96,7 @@ export default {
                   }
                 }
                 subresolve();
-              })
+              }),
             ];
 
             Promise.all(parts).then(() => {
@@ -119,7 +120,7 @@ export default {
   transformData: (data, model) => {
     map(model.fields, (field, k) => {
       if (field.transformations) {
-        field.transformations.map(transformation => {
+        field.transformations.map((transformation) => {
           switch (transformation) {
             case "toLowerCase":
               data.data[k] = data.data[k].toLowerCase();
@@ -142,5 +143,5 @@ export default {
     });
 
     return data;
-  }
+  },
 };
