@@ -13,7 +13,7 @@ require("./Utils/Models/AppPermissions");
 const app = express();
 app.set("port", config.port);
 app.use("/public", express.static("../../Files/Public"));
-app.use(express.static("../Client/build"));
+app.use('/*',express.static("../Client/build"));
 let http = require("http").Server(app);
 let io = require("socket.io")(http);
 
