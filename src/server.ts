@@ -16,9 +16,9 @@ app.set("port", config.port);
 app.use("/public", express.static("../../Files/Public"));
 // Exclude react build resources
 app.use('/static', express.static("../Client/build/static"))
+app.use('/manifest.json', express.static("../Client/build//manifest.json"));
 app.use('/favicon.ico', express.static("../Client/build/favicon.ico"));
 app.use('/logo192.png', express.static("../Client/build/logo192.png"));
-app.use('/manifest.json', express.static("../Client/build/manifest.json"));
 // Serve react
 app.use('/*',express.static("../Client/build"));
 
