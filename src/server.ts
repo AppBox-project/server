@@ -15,12 +15,13 @@ app.set("port", config.port);
 // Serve public files
 app.use("/public", express.static("../../Files/Public"));
 // Exclude react build resources
-app.use('/static', express.static("../Client/build/static"))
-app.use('/manifest.json', express.static("../Client/build//manifest.json"));
-app.use('/favicon.ico', express.static("../Client/build/favicon.ico"));
-app.use('/logo192.png', express.static("../Client/build/logo192.png"));
+app.use("/static", express.static("../Client/build/static"));
+app.use("/manifest.json", express.static("../Client/build//manifest.json"));
+app.use("/favicon.ico", express.static("../Client/build/favicon.ico"));
+app.use("/logo192.png", express.static("../Client/build/logo192.png"));
+app.use("/logo512.png", express.static("../Client/build/logo512.png"));
 // Serve react
-app.use('/*',express.static("../Client/build"));
+app.use("/*", express.static("../Client/build"));
 
 let http = require("http").Server(app);
 let io = require("socket.io")(http);

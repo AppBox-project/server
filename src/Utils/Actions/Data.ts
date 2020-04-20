@@ -139,7 +139,7 @@ export default [
   },
   {
     // --> Update data
-    // (requestId, objectId, toChange)
+    // (requestId, objectId, toChange, type)
     key: "updateObject",
     action: (args, models, socket, socketInfo) => {
       models.objects.model.findOne({ key: args.type }).then((objectType) => {
