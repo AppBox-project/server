@@ -1,6 +1,88 @@
 import { map } from "lodash";
 import f from "../Functions";
 
+// This is the rewritten version of validate data
+const validateNewObject = async (models, newObject, oldObject) => {
+  const errors = [];
+  const model = await models.objects.model.findOne({
+    key: oldObject.objectId,
+  });
+
+  const fieldPromises = [];
+  map(model.fields, async (field, fieldId) => {
+    fieldPromises.push(
+      new Promise((fieldPromiseResolve, fieldPromiseReject) => {
+        // Step 1: required fields
+        if (field.required) {
+          // Check if the object has a value
+          if (!newObject.data[fieldId]) {
+            errors.push({ reason: "missing-required", field: fieldId });
+          }
+        }
+
+        // Step 2: unique fields
+        const uniquePromise = new Promise(
+          async (uniquePromiseResolve, uniquePromiseReject) => {
+            if (field.unique) {
+              const sk = `data.${fieldId}`;
+
+              const duplicate = await models.entries.model.findOne({
+                objectId: model.key,
+                [sk]: newObject.data[fieldId],
+              });
+              if (duplicate._id.equals(oldObject._id)) {
+                uniquePromiseResolve();
+              } else {
+                errors.push({ reason: "not-unique", field: fieldId });
+                uniquePromiseResolve();
+              }
+            } else {
+              uniquePromiseResolve();
+            }
+          }
+        );
+
+        // Todo Check 3 (validations)
+
+        Promise.all([uniquePromise]).then(() => {
+          fieldPromiseResolve();
+        });
+      })
+    );
+  });
+
+  await Promise.all(fieldPromises);
+  return errors;
+};
+
+const transformData = (data, model) => {
+  map(model.fields, (field, k) => {
+    if (field.transformations) {
+      field.transformations.map((transformation) => {
+        switch (transformation) {
+          case "toLowerCase":
+            data.data[k] = data.data[k].toLowerCase();
+            break;
+          case "toUpperCase":
+            data.data[k] = data.data[k].toUpperCase();
+            break;
+          case "hash":
+            data.data[k] = f.user.hashString(data.data[k]);
+            break;
+          default:
+            console.log(
+              `Unknown transformation ${transformation} not applied.`
+            );
+
+            break;
+        }
+      });
+    }
+  });
+
+  return data;
+};
+
 export default {
   // validateData()
   // --> Loop through the fields for a model and validate piece by piece
@@ -117,31 +199,31 @@ export default {
   },
   // transformData()
   // --> Loop through the fields for a model and apply required transformations
-  transformData: (data, model) => {
-    map(model.fields, (field, k) => {
-      if (field.transformations) {
-        field.transformations.map((transformation) => {
-          switch (transformation) {
-            case "toLowerCase":
-              data.data[k] = data.data[k].toLowerCase();
-              break;
-            case "toUpperCase":
-              data.data[k] = data.data[k].toUpperCase();
-              break;
-            case "hash":
-              data.data[k] = f.user.hashString(data.data[k]);
-              break;
-            default:
-              console.log(
-                `Unknown transformation ${transformation} not applied.`
-              );
+  transformData,
+  updateObject: async (models, id, changes) => {
+    return new Promise(async (resolve, reject) => {
+      const oldObject = await models.entries.model.findOne({ _id: id });
+      let newObject = oldObject;
+      map(changes, (value, fieldId) => {
+        newObject.data[fieldId] = value;
+      });
 
-              break;
-          }
+      const validations = await validateNewObject(models, newObject, oldObject);
+      if (validations.length < 1) {
+        // Passed
+        // Step 2: Transform data
+        const model = await models.objects.model.findOne({
+          key: oldObject.objectId,
         });
+
+        newObject = transformData(newObject, model);
+        newObject.markModified("data");
+        newObject.save();
+        resolve();
+      } else {
+        // Failed
+        reject(validations);
       }
     });
-
-    return data;
   },
 };

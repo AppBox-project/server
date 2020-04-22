@@ -260,4 +260,27 @@ export default [
       });
     },
   },
+  {
+    // --> Update many
+    // Updates multiple entries, requires an object as such
+    // { changes: {id: {fieldId: newValue} }, requestId }
+    key: "updateMany",
+    action: (args, models, socket, socketInfo) => {
+      map(args.changes, (changes, id) => {
+        f.data.updateObject(models, id, changes).then(
+          (success) => {
+            socket.emit(`receive-${args.requestId}`, {
+              success: true,
+            });
+          },
+          (reasons) => {
+            socket.emit(`receive-${args.requestId}`, {
+              success: false,
+              reasons,
+            });
+          }
+        );
+      });
+    },
+  },
 ];
