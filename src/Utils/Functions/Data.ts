@@ -201,6 +201,7 @@ export default {
   // --> Loop through the fields for a model and apply required transformations
   transformData,
   updateObject: async (models, id, changes) => {
+    // Todo: this may require a permissions check (see older functions)
     return new Promise(async (resolve, reject) => {
       const oldObject = await models.entries.model.findOne({ _id: id });
       let newObject = oldObject;
