@@ -17,6 +17,7 @@ app.use("/public", express.static("../../Files/Public"));
 // Exclude react build resources
 // Catch all regular build files
 // Todo this can be less ugly
+app.use("/static", express.static("../Client/build/static"));
 app.use("/:filename.:extension", function (req, res) {
   var filename = req.params.filename;
   var extension = req.params.extension;
