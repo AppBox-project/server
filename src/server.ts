@@ -33,7 +33,7 @@ app.use("/:filename.ico", function (req, res) {
     // Debug for dev, remove later
     res.sendFile(`/home/duveaux/AppBox/System/Client/build/${filename}.ico`);
   } else {
-    res.sendFile(`/AppBox/System/Client/build/${filename}.js`);
+    res.sendFile(`/AppBox/System/Client/build/${filename}.ico`);
   }
 });
 app.use("/:filename.json", function (req, res) {
@@ -42,7 +42,7 @@ app.use("/:filename.json", function (req, res) {
     // Debug for dev, remove later
     res.sendFile(`/home/duveaux/AppBox/System/Client/build/${filename}.json`);
   } else {
-    res.sendFile(`/AppBox/System/Client/build/${filename}.js`);
+    res.sendFile(`/AppBox/System/Client/build/${filename}.json`);
   }
 });
 
@@ -52,7 +52,7 @@ app.use("/:filename.css", function (req, res) {
     // Debug for dev, remove later
     res.sendFile(`/home/duveaux/AppBox/System/Client/build/${filename}.css`);
   } else {
-    res.sendFile(`/AppBox/System/Client/build/${filename}.js`);
+    res.sendFile(`/AppBox/System/Client/build/${filename}.css`);
   }
 });
 // Serve react
