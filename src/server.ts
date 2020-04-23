@@ -17,7 +17,10 @@ app.use("/public", express.static("../../Files/Public"));
 // Exclude react build resources
 app.use("/logo192.png", express.static("../Client/build/logo192.png"));
 app.use("/logo512.png", express.static("../Client/build/logo512.png"));
+app.use("/favicon.ico", express.static("../Client/build/favicon.ico"));
 app.use("/static", express.static("../Client/build/static"));
+// Catch all regular build files
+// Todo this can be less ugly
 app.use("/:filename.js", function (req, res) {
   var filename = req.params.filename;
   if (req.get("host").match("localhost")) {
@@ -25,15 +28,6 @@ app.use("/:filename.js", function (req, res) {
     res.sendFile(`/home/duveaux/AppBox/System/Client/build/${filename}.js`);
   } else {
     res.sendFile(`/AppBox/System/Client/build/${filename}.js`);
-  }
-});
-app.use("/:filename.ico", function (req, res) {
-  var filename = req.params.filename;
-  if (req.get("host").match("localhost")) {
-    // Debug for dev, remove later
-    res.sendFile(`/home/duveaux/AppBox/System/Client/build/${filename}.ico`);
-  } else {
-    res.sendFile(`/AppBox/System/Client/build/${filename}.ico`);
   }
 });
 app.use("/:filename.json", function (req, res) {
