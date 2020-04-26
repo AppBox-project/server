@@ -14,6 +14,10 @@ const app = express();
 app.set("port", config.port);
 // Serve public files
 app.use("/public", express.static("../../Files/Public"));
+// Api
+app.use("/api", (req, res, next) => {
+  res.send("test");
+});
 // Exclude react build resources
 // Catch all regular build files
 // Todo this can be less ugly
@@ -21,14 +25,7 @@ app.use("/static", express.static("../Client/build/static"));
 app.use("/:filename.:extension", function (req, res) {
   var filename = req.params.filename;
   var extension = req.params.extension;
-  if (req.get("host").match("localhost")) {
-    // Debug for dev, remove later
-    res.sendFile(
-      `/home/duveaux/AppBox/System/Client/build/${filename}.${extension}`
-    );
-  } else {
-    res.sendFile(`/AppBox/System/Client/build/${filename}.${extension}`);
-  }
+  res.sendFile(`/AppBox/System/Client/build/${filename}.${extension}`);
 });
 // Serve react
 app.use("/*", express.static("../Client/build"));
