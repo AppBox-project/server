@@ -1,3 +1,5 @@
+import { map } from "lodash";
+
 // The read API allows you to read and search files
 const executeReadApi = async (models, objectId, req, res, next) => {
   const model = await models.objects.model.findOne({ key: objectId });
@@ -27,7 +29,20 @@ const executeReadApi = async (models, objectId, req, res, next) => {
       }
 
       if (authenticated) {
-        const results = await models.entries.model.find({ objectId });
+        let results;
+        if (req.query) {
+          const requirements = {};
+          map(req.query, (value, key) => {
+            requirements[`data.${key}`] = value;
+          });
+          results = await models.entries.model.find({
+            objectId,
+            ...requirements,
+          });
+        } else {
+          // No query params
+          results = await models.entries.model.find({ objectId });
+        }
         res.send(JSON.stringify(results));
       }
     }
