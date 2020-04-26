@@ -3,6 +3,7 @@ import config from "./config";
 var mongoose = require("mongoose");
 import actions from "./Utils/Actions";
 import { map } from "lodash";
+import { executeReadApi } from "./API";
 
 // Models
 require("./Utils/Models/Objects");
@@ -13,23 +14,6 @@ require("./Utils/Models/AppPermissions");
 const app = express();
 app.set("port", config.port);
 // Serve public files
-app.use("/public", express.static("../../Files/Public"));
-// Api
-app.use("/api", (req, res, next) => {
-  res.send("test");
-});
-// Exclude react build resources
-// Catch all regular build files
-// Todo this can be less ugly
-app.use("/static", express.static("../Client/build/static"));
-app.use("/:filename.:extension", function (req, res) {
-  var filename = req.params.filename;
-  var extension = req.params.extension;
-  res.sendFile(`/AppBox/System/Client/build/${filename}.${extension}`);
-});
-// Serve react
-app.use("/*", express.static("../Client/build"));
-
 let http = require("http").Server(app);
 let io = require("socket.io")(http);
 
@@ -77,6 +61,31 @@ db.once("open", function () {
   });
 
   console.log("Connected to database and loaded models.");
+
+  // Exclude react build resources
+  // Catch all regular build files
+  // Todo this can be less ugly
+  app.use("/public", express.static("../../Files/Public"));
+  // Api
+  app.use("/api/:objectId/:apiId", (req, res, next) => {
+    switch (req.params.apiId) {
+      case "read":
+        executeReadApi(models, req.params.objectId, req, res, next);
+        break;
+      default:
+        res.send("Unknown API ID");
+        break;
+    }
+  });
+
+  app.use("/static", express.static("../Client/build/static"));
+  app.use("/:filename.:extension", function (req, res) {
+    var filename = req.params.filename;
+    var extension = req.params.extension;
+    res.sendFile(`/AppBox/System/Client/build/${filename}.${extension}`);
+  });
+  // Serve react
+  app.use("/*", express.static("../Client/build"));
 
   http.listen(config.port, () => {
     console.log(`Server open on http://localhost:${config.port}`);
