@@ -4,6 +4,7 @@ var mongoose = require("mongoose");
 import actions from "./Utils/Actions";
 import { map } from "lodash";
 import { executeReadApi } from "./API";
+var cors = require("cors");
 
 // Models
 require("./Utils/Models/Objects");
@@ -67,7 +68,7 @@ db.once("open", function () {
   // Todo this can be less ugly
   app.use("/public", express.static("../../Files/Public"));
   // Api
-  app.use("/api/:objectId/:apiId", (req, res, next) => {
+  app.use("/api/:objectId/:apiId", cors(), (req, res, next) => {
     switch (req.params.apiId) {
       case "read":
         executeReadApi(models, req.params.objectId, req, res, next);
