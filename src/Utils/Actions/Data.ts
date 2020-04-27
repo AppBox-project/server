@@ -316,4 +316,31 @@ export default [
       returnData();
     },
   },
+  {
+    // --> Cleans up listeners for object
+    key: "stopGettingUserSetting",
+    action: (args, models, socket, socketInfo) => {
+      console.log(`Cleaning up usersetting request ${args.requestId}`);
+      delete models.usersettings.listeners[args.requestId];
+      remove(socketInfo.listeners, (o) => {
+        return o === args.requestId;
+      });
+    },
+  },
+  {
+    // --> getUserSetting
+    // Updates multiple entries, requires an object as such
+    // { key, value }
+    key: "setUserSetting",
+    action: async (args, models, socket, socketInfo) => {
+      // Find data
+      const setting = await models.usersettings.model.findOne({
+        key: args.key,
+        username: socketInfo.username,
+      });
+      setting.value = args.value;
+      setting.markModified("value");
+      setting.save();
+    },
+  },
 ];
