@@ -10,6 +10,7 @@ var cors = require("cors");
 require("./Utils/Models/Objects");
 require("./Utils/Models/Entries");
 require("./Utils/Models/AppPermissions");
+require("./Utils/Models/UserSettings");
 
 // Start up server
 const app = express();
@@ -45,6 +46,11 @@ db.once("open", function () {
     apppermissions: {
       model: mongoose.model("AppPermissions"),
     },
+    usersettings: {
+      model: mongoose.model("UserSettings"),
+      stream: db.collection("usersettings").watch(),
+      listeners: {},
+    },
   };
 
   // Change streams
@@ -56,6 +62,12 @@ db.once("open", function () {
   });
   models.entries.stream.on("change", (change) => {
     map(models.entries.listeners, (listener, key) => {
+      //@ts-ignore
+      listener(change);
+    });
+  });
+  models.usersettings.stream.on("change", (change) => {
+    map(models.objects.listeners, (listener) => {
       //@ts-ignore
       listener(change);
     });
