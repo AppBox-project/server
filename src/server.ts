@@ -67,7 +67,7 @@ db.once("open", function () {
     });
   });
   models.usersettings.stream.on("change", (change) => {
-    map(models.objects.listeners, (listener) => {
+    map(models.usersettings.listeners, (listener) => {
       //@ts-ignore
       listener(change);
     });

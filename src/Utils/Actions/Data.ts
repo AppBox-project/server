@@ -283,4 +283,37 @@ export default [
       });
     },
   },
+  {
+    // --> getUserSetting
+    // Updates multiple entries, requires an object as such
+    // { requestId, key }
+    key: "getUserSetting",
+    action: async (args, models, socket, socketInfo) => {
+      // Find data
+      const returnData = async () => {
+        const setting = await models.usersettings.model.findOne({
+          key: args.key,
+          username: socketInfo.username,
+        });
+
+        if (setting) {
+          socket.emit(`receive-${args.requestId}`, {
+            success: true,
+            data: setting,
+          });
+        } else {
+          socket.emit(`receive-${args.requestId}`, {
+            success: false,
+            reason: "no-such-setting",
+          });
+        }
+      };
+
+      models.usersettings.listeners[args.requestId] = (change) => {
+        returnData();
+      };
+      socketInfo.listeners.push(args.requestId);
+      returnData();
+    },
+  },
 ];
