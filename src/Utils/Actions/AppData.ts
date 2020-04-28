@@ -6,6 +6,53 @@ import Functions from "../Functions";
 
 export default [
   {
+    key: "appListensForModel",
+    action: async (args, models, socket, socketInfo) => {
+      const returnData = async () => {
+        // Check app permissions
+        const permissions = await models.apppermissions.model.findOne({
+          appId: args.appId,
+          objectId: args.modelId,
+        });
+
+        if (permissions.permissions.includes("read")) {
+          // Check succesful
+          // Send data
+          const model = await models.objects.model.findOne({
+            key: args.modelId,
+          });
+          console.log(model);
+          socket.emit(`receive-${args.requestId}`, {
+            success: true,
+            data: model,
+          });
+        } else {
+          socket.emit(`receive-${args.requestId}`, {
+            success: false,
+            reason: "no-read-permission-app",
+          });
+        }
+      };
+
+      models.objects.listeners[args.requestId] = (change) => {
+        returnData();
+      };
+      socketInfo.listeners.push(args.requestId);
+      returnData();
+    },
+  },
+  {
+    // --> Cleans up listeners for object
+    key: "appUnlistensForModel",
+    action: (args, models, socket, socketInfo) => {
+      delete models.objects.listeners[args.requestId];
+      remove(socketInfo.listeners, (o) => {
+        return o === args.requestId;
+      });
+    },
+  },
+  {
+    // Todo: legacy function; remove
     // --> Creates listeners for objecttypes and returns data
     // (filter, requestId, appId)
     key: "appListensForObjectTypes",
@@ -66,7 +113,7 @@ export default [
                 promises.push(
                   new Promise((resolve, reject) => {
                     models.objects.model
-                      .findOne({ key: appPermission.objectId })
+                      .findOne({ appId: args.appId, ...args.filter })
                       .then((type) => {
                         type.permissions.read.map((permission) => {
                           if (socketInfo.permissions.includes(permission)) {
