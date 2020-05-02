@@ -340,19 +340,22 @@ export default [
     key: "appUpdatesModel",
     action: async (args, models, socket, socketInfo) => {
       if (Functions.appdata.checkAppRoot(models, args.appId)) {
-        console.log(args);
-
         const model = await models.objects.model.findOne({
           key: args.type,
           _id: args.id,
         });
+
         map(args.newModel, (value, key) => {
           model[key] = value;
+          console.log(model[key], key);
         });
 
-        model.save().then(() => {
+        model.save().then((model) => {
+          console.log(model);
+
           socket.emit(`receive-${args.requestId}`, {
             success: true,
+            model,
           });
         });
       } else {
