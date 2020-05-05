@@ -345,20 +345,33 @@ export default [
   },
   // --> allowAppAccess
   // Updates multiple entries, requires an object as such
-  // { key, value }
+  // { requestId, appId, objectType, permissionType }
   {
     key: "allowAppAccess",
     action: async (args, models, socket, socketInfo) => {
       // Todo: only certain people may set this property
-      new models.apppermissions.model({
+      const permission = await models.apppermissions.model.findOne({
         appId: args.appId,
         objectId: args.objectType,
-        permissions: ["read"],
-      })
-        .save()
-        .then((result) => {
+      });
+
+      if (permission) {
+        permission.permissions.push(args.permissionType);
+        permission.markModified("permissions");
+        permission.save().then((result) => {
           socket.emit(`receive-${args.requestId}`, { success: true });
         });
+      } else {
+        new models.apppermissions.model({
+          appId: args.appId,
+          objectId: args.objectType,
+          permissions: [args.permissionType],
+        })
+          .save()
+          .then((result) => {
+            socket.emit(`receive-${args.requestId}`, { success: true });
+          });
+      }
     },
   },
 ];
