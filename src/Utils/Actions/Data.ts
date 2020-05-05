@@ -343,4 +343,22 @@ export default [
       setting.save();
     },
   },
+  // --> allowAppAccess
+  // Updates multiple entries, requires an object as such
+  // { key, value }
+  {
+    key: "allowAppAccess",
+    action: async (args, models, socket, socketInfo) => {
+      // Todo: only certain people may set this property
+      new models.apppermissions.model({
+        appId: args.appId,
+        objectId: args.objectType,
+        permissions: ["read"],
+      })
+        .save()
+        .then((result) => {
+          socket.emit(`receive-${args.requestId}`, { success: true });
+        });
+    },
+  },
 ];
