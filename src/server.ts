@@ -184,6 +184,8 @@ db.once("open", function () {
         // Perform action
         socket.on(action.key, (args) => {
           // See if we still remember who this is
+          if (action.key !== "signIn")
+            action.action(args, models, socket, socketInfo);
           if (!socketInfo.identified && action.key !== "signIn") {
             // Ask the socket to re-identify and then rebroadcast the action
             socket.emit("who-r-u", { action, args });
