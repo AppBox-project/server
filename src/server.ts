@@ -5,6 +5,9 @@ import actions from "./Utils/Actions";
 import { map } from "lodash";
 import { executeReadApi } from "./API";
 var cors = require("cors");
+const formidableMiddleware = require("express-formidable");
+import f from "./Utils/Functions";
+const fs = require("fs");
 
 // Models
 require("./Utils/Models/Objects");
@@ -78,7 +81,13 @@ db.once("open", function () {
   // Exclude react build resources
   // Catch all regular build files
   // Todo this can be less ugly
+  // Public files
   app.use("/public", express.static("../../Files/Public"));
+
+  // Static storage files
+  // Todo make non-private
+  app.use("/object-storage", express.static("../../Files/Objects"));
+
   // Api
   app.use("/api/:objectId/:apiId", cors(), (req, res, next) => {
     switch (req.params.apiId) {
@@ -97,6 +106,64 @@ db.once("open", function () {
     var extension = req.params.extension;
     res.sendFile(`/AppBox/System/Client/build/${filename}.${extension}`);
   });
+  app.use(formidableMiddleware());
+
+  // File uploader
+  app.post("/upload", function (req, res) {
+    //@ts-ignore
+    const username = req.fields.username;
+    //@ts-ignore
+    const token = req.fields.token;
+    //@ts-ignore
+    const modelType = req.fields.modelType;
+    //@ts-ignore
+    const objectId = req.fields.objectId;
+
+    //@ts-ignore
+    const file = req.files.image;
+
+    // Authorize user
+    models.entries.model
+      .findOne({ objectId: "user", "data.username": username })
+      .then((user) => {
+        if (user) {
+          if (f.user.checkUserToken(user, token)) {
+            // Succesful authentication
+            // Todo: object itemtype permissions
+            // Currently all authenticated users can upload
+            var source = fs.createReadStream(file.path);
+            fs.mkdir(
+              `/AppBox/Files/Objects/${modelType}/${objectId}`,
+              {
+                recursive: true,
+              },
+              () => {
+                var dest = fs.createWriteStream(
+                  `/AppBox/Files/Objects/${modelType}/${objectId}/${file.name}`
+                );
+
+                source.pipe(dest);
+                source.on("end", function () {
+                  res.send(
+                    `/object-storage/${modelType}/${objectId}/${file.name}`
+                  );
+                });
+                source.on("error", function (err) {
+                  res.status(500);
+                });
+              }
+            );
+          } else {
+            res.status(403);
+            res.send("wrong-token");
+          }
+        } else {
+          res.status(403);
+          res.send("no-such-user");
+        }
+      });
+  });
+
   // Serve react
   app.use("/*", express.static("../Client/build"));
 

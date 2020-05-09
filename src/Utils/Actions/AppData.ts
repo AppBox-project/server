@@ -347,12 +347,9 @@ export default [
 
         map(args.newModel, (value, key) => {
           model[key] = value;
-          console.log(model[key], key);
         });
 
         model.save().then((model) => {
-          console.log(model);
-
           socket.emit(`receive-${args.requestId}`, {
             success: true,
             model,
