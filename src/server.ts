@@ -176,12 +176,20 @@ db.once("open", function () {
         listeners: [],
         permissions: ["public"],
         username: undefined,
+        identified: false,
       };
       console.log("A user connected");
 
       actions.map((action) => {
+        // Perform action
         socket.on(action.key, (args) => {
-          action.action(args, models, socket, socketInfo);
+          // See if we still remember who this is
+          if (!socketInfo.identified && action.key !== "signIn") {
+            // Ask the socket to re-identify and then rebroadcast the action
+            socket.emit("who-r-u", { action, args });
+          } else {
+            action.action(args, models, socket, socketInfo);
+          }
         });
       });
 

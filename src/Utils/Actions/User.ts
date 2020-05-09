@@ -10,27 +10,27 @@ export default [
     action: (args, models, socket, socketInfo) => {
       models.entries.model
         .findOne({ objectId: "user", "data.username": args.user.username })
-        .then(user => {
+        .then((user) => {
           if (user) {
             if (f.user.compareHashes(args.user.password, user.data.password)) {
               socket.emit(`receive-${args.requestId}`, {
                 success: true,
-                token: f.user.getToken(args.user.username, user.data.password)
+                token: f.user.getToken(args.user.username, user.data.password),
               });
             } else {
               socket.emit(`receive-${args.requestId}`, {
                 success: false,
-                reason: "wrong-password"
+                reason: "wrong-password",
               });
             }
           } else {
             socket.emit(`receive-${args.requestId}`, {
               success: false,
-              reason: "no-such-user"
+              reason: "no-such-user",
             });
           }
         });
-    }
+    },
   },
   // --> Perform sign in based on token
   {
@@ -38,28 +38,29 @@ export default [
     action: (args, models, socket, socketInfo) => {
       models.entries.model
         .findOne({ objectId: "user", "data.username": args.username })
-        .then(user => {
+        .then((user) => {
           if (user) {
             if (f.user.checkUserToken(user, args.token)) {
               socket.emit(`receive-${args.requestId}`, {
-                success: true
+                success: true,
               });
               socketInfo.permissions.push("known");
               socketInfo.username = user.data.username;
+              socketInfo.identified = true;
               console.log(`Socket identified as ${user.data.username}`);
             } else {
               socket.emit(`receive-${args.requestId}`, {
                 success: false,
-                reason: "wrong-token"
+                reason: "wrong-token",
               });
             }
           } else {
             socket.emit(`receive-${args.requestId}`, {
               success: false,
-              reason: "no-such-user"
+              reason: "no-such-user",
             });
           }
         });
-    }
-  }
+    },
+  },
 ];
