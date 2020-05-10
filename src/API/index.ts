@@ -1,4 +1,5 @@
 import { map } from "lodash";
+import { baseUrl } from "../Utils/Utils/Utils";
 
 // The read API allows you to read and search files
 const executeReadApi = async (models, objectId, req, res, next) => {
@@ -29,21 +30,32 @@ const executeReadApi = async (models, objectId, req, res, next) => {
       }
 
       if (authenticated) {
-        let results;
+        let objects;
         if (req.query) {
           const requirements = {};
           map(req.query, (value, key) => {
             requirements[`data.${key}`] = value;
           });
-          results = await models.entries.model.find({
+          objects = await models.entries.model.find({
             objectId,
             ...requirements,
           });
         } else {
           // No query params
-          results = await models.entries.model.find({ objectId });
+          objects = await models.entries.model.find({ objectId });
         }
-        res.send(JSON.stringify(results));
+        // Modifiers to apply to data
+        map(model.fields, (field, fieldKey) => {
+          // Modifiers to apply to data
+          const modifiers = [];
+          if (field.type === "picture") {
+            objects.map((object) => {
+              object.data[fieldKey] = baseUrl + object.data[fieldKey];
+            });
+          }
+        });
+
+        res.send(JSON.stringify(objects));
       }
     }
   }
