@@ -84,6 +84,9 @@ db.once("open", function () {
   // Public files
   app.use("/public", express.static("/AppBox/Files/Public"));
 
+  // Sites
+  app.use("/sites", express.static("/AppBox/Files/Sites"));
+
   // Static storage files
   // Todo make non-private
   app.use("/object-storage", express.static("../../Files/Objects"));
@@ -184,7 +187,7 @@ db.once("open", function () {
         // Perform action
         socket.on(action.key, (args) => {
           // See if we still remember who this is
-          if (action.key === "signIn") {
+          if (action.key === "signIn" || action.key === "requestToken") {
             action.action(args, models, socket, socketInfo);
           } else if (socketInfo.identified === false) {
             // Ask the socket to re-identify and then rebroadcast the action
