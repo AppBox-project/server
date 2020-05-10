@@ -50,7 +50,7 @@ const executeReadApi = async (models, objectId, req, res, next) => {
           const modifiers = [];
           if (field.type === "picture") {
             objects.map((object) => {
-              object.data[fieldKey] = baseUrl + object.data[fieldKey];
+              object.data[fieldKey] = { url: baseUrl + object.data[fieldKey] };
             });
           }
         });
