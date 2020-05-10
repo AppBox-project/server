@@ -82,7 +82,7 @@ db.once("open", function () {
   // Catch all regular build files
   // Todo this can be less ugly
   // Public files
-  app.use("/public", express.static("../../Files/Public"));
+  app.use("/public", express.static("/AppBox/Files/Public"));
 
   // Static storage files
   // Todo make non-private
@@ -184,9 +184,9 @@ db.once("open", function () {
         // Perform action
         socket.on(action.key, (args) => {
           // See if we still remember who this is
-          if (action.key === "signIn")
+          if (action.key === "signIn") {
             action.action(args, models, socket, socketInfo);
-          if (socketInfo.identified === false && action.key !== "signIn") {
+          } else if (socketInfo.identified === false) {
             // Ask the socket to re-identify and then rebroadcast the action
             socket.emit("who-r-u", { action, args });
           } else {
