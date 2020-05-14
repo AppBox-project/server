@@ -244,6 +244,7 @@ export default [
                     socket.emit(`receive-${args.requestId}`, {
                       success: false,
                       reason: "no-such-type",
+                      request: { ...args, action: "appListensForObjects" },
                     });
                   }
                 });
