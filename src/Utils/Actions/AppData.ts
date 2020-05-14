@@ -90,6 +90,7 @@ export default [
             socket.emit(`receive-${args.requestId}`, {
               success: false,
               reason: "no-results",
+              request: args,
             });
           }
         };
@@ -139,6 +140,7 @@ export default [
               socket.emit(`receive-${args.requestId}`, {
                 success: false,
                 reason: "no-results",
+                request: { ...args, action: "appListensForObjectTypes" },
               });
             }
           });

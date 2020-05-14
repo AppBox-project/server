@@ -43,6 +43,7 @@ export default [
             socket.emit(`receive-${args.requestId}`, {
               success: false,
               reason: "no-read-permissions",
+              args: args,
             });
           }
         } else {
@@ -305,6 +306,7 @@ export default [
           socket.emit(`receive-${args.requestId}`, {
             success: false,
             reason: "no-such-setting",
+            request: args,
           });
         }
       };
