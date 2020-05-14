@@ -8,6 +8,7 @@ var cors = require("cors");
 const formidableMiddleware = require("express-formidable");
 import f from "./Utils/Functions";
 const fs = require("fs");
+import { mongoDefaultConnection } from "./secrets";
 
 // Models
 require("./Utils/Models/Objects");
@@ -24,7 +25,7 @@ let io = require("socket.io")(http);
 
 mongoose.connect(
   `mongodb://${
-    process.env.DBURL ? process.env.DBURL : "192.168.0.2:27017"
+    process.env.DBURL ? process.env.DBURL : mongoDefaultConnection
   }/AppBox`,
   {
     useNewUrlParser: true,
