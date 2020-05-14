@@ -9,7 +9,7 @@ const getSecret = () => {
 };
 
 export default {
-  hashString: string => {
+  hashString: (string) => {
     return bcrypt.hashSync(string, salt);
   },
   compareHashes: (string, hash) => {
@@ -23,5 +23,5 @@ export default {
       getSecret() + user.data.username + user.data.password,
       token
     );
-  }
+  },
 };

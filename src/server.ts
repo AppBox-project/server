@@ -182,7 +182,7 @@ db.once("open", function () {
         username: undefined,
         identified: false,
       };
-      console.log("A user connected");
+      console.log(`Socket connection from ${socket.conn.remoteAddress}`);
 
       actions.map((action) => {
         // Perform action
