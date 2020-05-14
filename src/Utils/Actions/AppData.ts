@@ -5,6 +5,40 @@ import Functions from "../Functions";
 // --> It may be possible to send something else than arrays which may be a way into the database
 
 export default [
+  //--> appCreatesModel()
+  //{ newModel, requestId, appId }
+  {
+    key: "appCreatesModel",
+    action: async (args, models, socket, socketInfo) => {
+      const app = await models.entries.model.findOne({
+        objectId: "app",
+        "data.id": args.appId,
+      });
+
+      if (app.data.root) {
+        const newModel = new models.objects.model({
+          ...args.newModel,
+          permissions: {
+            read: ["known"],
+            create: ["known"],
+            modifyOwn: ["known"],
+            write: ["known"],
+            delete: ["known"],
+            deleteOwn: ["known"],
+          },
+        });
+        newModel.save().then(() => {
+          socket.emit(`receive-${args.requestId}`, { success: true });
+        });
+      } else {
+        socket.emit(`receive-${args.requestId}`, {
+          success: false,
+          reason: "no-root-app",
+          request: { ...args, action: "appCreatesModel" },
+        });
+      }
+    },
+  },
   {
     key: "appListensForModel",
     action: async (args, models, socket, socketInfo) => {
