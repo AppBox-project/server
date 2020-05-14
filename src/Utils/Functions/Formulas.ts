@@ -242,7 +242,9 @@ export default {
                   //@ts-ignore
                   findIndex(map, (o) => {
                     return (
+                      //@ts-ignore
                       o.markAsDependency.path === field &&
+                      //@ts-ignore
                       o.markAsDependency.key === model.key
                     );
                   }) - 1;
