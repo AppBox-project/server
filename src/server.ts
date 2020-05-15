@@ -25,7 +25,7 @@ let io = require("socket.io")(http);
 
 mongoose.connect(
   `mongodb://${
-    process.env.dbUrl ? process.env.dbUrl : mongoDefaultConnection
+    process.env.dbUrl ? process.env.dbUrl : "192.168.0.2:27017"
   }/AppBox`,
   {
     useNewUrlParser: true,
