@@ -8,7 +8,6 @@ var cors = require("cors");
 const formidableMiddleware = require("express-formidable");
 import f from "./Utils/Functions";
 const fs = require("fs");
-import { mongoDefaultConnection } from "./secrets";
 
 // Models
 require("./Utils/Models/Objects");
