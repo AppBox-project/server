@@ -26,7 +26,7 @@ let io = require("socket.io")(http);
 mongoose.connect(
   `mongodb://${
     process.env.DBURL ? process.env.DBURL : mongoDefaultConnection
-  }/AppBox`,
+  }/AppBox?authSource=admin&readPreference=primaryPreferred&appname=AppBox-Server&ssl=false`,
   {
     useNewUrlParser: true,
     useUnifiedTopology: true,
