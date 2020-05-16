@@ -9,6 +9,7 @@ mongoose.model(
     {
       key: String,
       name: String,
+      primary: String,
       name_plural: String,
       overviews: {},
       buttons: {},

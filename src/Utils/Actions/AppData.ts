@@ -295,6 +295,15 @@ export default [
         ) {
           // We have permission. Create object
           const model = await models.objects.model.findOne({ key: args.type });
+
+          // Add any default values to the new object's model
+          map(model.fields, (mField, mKey) => {
+            if (mField.default) {
+              args.object[mKey] = mField.default;
+            }
+          });
+
+          // Validate the model
           Functions.data.validateData(model, args, models, false).then(
             () => {
               new models.entries.model(
