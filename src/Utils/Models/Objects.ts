@@ -10,6 +10,7 @@ mongoose.model(
       key: String,
       name: String,
       primary: String,
+      icon: String,
       name_plural: String,
       overviews: {},
       fields: {},
