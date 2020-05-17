@@ -12,7 +12,6 @@ mongoose.model(
       primary: String,
       name_plural: String,
       overviews: {},
-      buttons: {},
       fields: {},
       api: {
         read: { active: Boolean, endpoint: String, authentication: String },
