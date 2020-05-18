@@ -23,7 +23,14 @@ export default [
     key: "setFormulaDependencies",
     action: async (args, models, socket, socketInfo) => {
       // This action is for saving of a formula. It marks dependencies in the database.
+
       if (args.appId === "object-manager") {
+        const model = await models.objects.model.findOne({ key: args.context });
+        model.fields[args.fieldId].typeArgs.dependencies = args.dependencies;
+        model.markModified("fields");
+        model.save();
+        console.log(model.fields[args.fieldId].typeArgs);
+
         args.dependencies.map(async (dependency) => {
           // Per dependency part: create a map
           if (dependency.match("\\.")) {
