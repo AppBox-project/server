@@ -55,7 +55,6 @@ export default [
           const model = await models.objects.model.findOne({
             key: args.modelId,
           });
-          console.log(model);
           socket.emit(`receive-${args.requestId}`, {
             success: true,
             data: model,
