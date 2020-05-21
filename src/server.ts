@@ -123,7 +123,7 @@ db.once("open", function () {
     const objectId = req.fields.objectId;
 
     //@ts-ignore
-    const file = req.files.image;
+    const file = req.files.file;
 
     // Authorize user
     models.entries.model
