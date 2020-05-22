@@ -31,6 +31,7 @@
   "scripts": {
     "killDb": "mongod --shutdown --dbpath /home/Duveaux/AppBox/System/Database",
     "prepareDb": "mongod --replSet 'rs0' --dbpath ~/AppBox/System/Database && mongo --eval 'rs.initiate()'",
+    "startLocal": "set \"dbUrl=localhost:27017\" && yarn start",
     "build": "tsc",
     "watch-ts": "tsc -w",
     "watch-node": "nodemon dist/server.js",
