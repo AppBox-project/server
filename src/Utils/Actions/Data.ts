@@ -1,4 +1,4 @@
-import { remove, map } from "lodash";
+import { remove, map, pull } from "lodash";
 import f from "../Functions";
 
 // Todo sanitize filter input???
@@ -23,24 +23,28 @@ export default [
           if (hasReadAccess) {
             // Find data
             const returnData = async () => {
-              const data = await models.entries.model.find({
+              let data = await models.entries.model.find({
                 objectId: args.type,
                 ...args.filter,
               });
 
               // Check if local permissions are applicable
+              const toSplice = [];
               data.map((dataItem, index) => {
                 if (dataItem.data.permission___view) {
                   // If we have a local view field
+
                   if (
                     !socketInfo.permissions.includes(
                       dataItem.data.permission___view
                     )
                   ) {
-                    // And the current socket doesn't have that permission
-                    data.splice(index, 1); // Splice it out
+                    toSplice.push(dataItem);
                   }
                 }
+              });
+              toSplice.map((splicee) => {
+                pull(data, splicee);
               });
 
               socket.emit(`receive-${args.requestId}`, {
@@ -127,7 +131,8 @@ export default [
               new models.entries.model(
                 f.data.transformData(
                   { data: args.object, objectId: args.type },
-                  model
+                  model,
+                  {}
                 )
               )
                 .save()
@@ -190,7 +195,8 @@ export default [
                     async () => {
                       entry.data = f.data.transformData(
                         { data: newObject, objectId: args.type },
-                        model
+                        model,
+                        args.toChange
                       ).data;
                       entry.markModified("data");
 

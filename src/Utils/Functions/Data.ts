@@ -55,28 +55,30 @@ const validateNewObject = async (models, newObject, oldObject) => {
   return errors;
 };
 
-const transformData = (data, model) => {
+const transformData = (data, model, changed) => {
   map(model.fields, (field, k) => {
-    if (field.transformations) {
-      field.transformations.map((transformation) => {
-        switch (transformation) {
-          case "toLowerCase":
-            data.data[k] = data.data[k].toLowerCase();
-            break;
-          case "toUpperCase":
-            data.data[k] = data.data[k].toUpperCase();
-            break;
-          case "hash":
-            data.data[k] = f.user.hashString(data.data[k]);
-            break;
-          default:
-            console.log(
-              `Unknown transformation ${transformation} not applied.`
-            );
+    if (k in changed) {
+      if (field.transformations) {
+        field.transformations.map((transformation) => {
+          switch (transformation) {
+            case "toLowerCase":
+              data.data[k] = data.data[k].toLowerCase();
+              break;
+            case "toUpperCase":
+              data.data[k] = data.data[k].toUpperCase();
+              break;
+            case "hash":
+              data.data[k] = f.user.hashString(data.data[k]);
+              break;
+            default:
+              console.log(
+                `Unknown transformation ${transformation} not applied.`
+              );
 
-            break;
-        }
-      });
+              break;
+          }
+        });
+      }
     }
   });
 
@@ -217,7 +219,7 @@ export default {
           key: oldObject.objectId,
         });
 
-        newObject = transformData(newObject, model);
+        newObject = transformData(newObject, model, changes);
         newObject.markModified("data");
         newObject.save();
         resolve();

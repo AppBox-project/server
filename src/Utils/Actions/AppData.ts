@@ -362,7 +362,8 @@ export default [
               new models.entries.model(
                 Functions.data.transformData(
                   { data: args.object, objectId: args.type },
-                  model
+                  model,
+                  {}
                 )
               )
                 .save()
