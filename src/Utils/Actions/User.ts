@@ -38,16 +38,38 @@ export default [
     action: (args, models, socket, socketInfo) => {
       models.entries.model
         .findOne({ objectId: "user", "data.username": args.username })
-        .then((user) => {
+        .then(async (user) => {
           if (user) {
             if (f.user.checkUserToken(user, args.token)) {
               socket.emit(`receive-${args.requestId}`, {
                 success: true,
               });
-              socketInfo.permissions.push("known");
+
               socketInfo.username = user.data.username;
               socketInfo.identified = true;
-              console.log(`Socket identified as ${user.data.username}`);
+              console.log(`Socket identified as ${user.data.username}.`);
+              const newPermissions = ["known"];
+
+              // Find permissions
+              // Todo improve
+              const roles = await models.entries.model.find({
+                _id: { $in: user.data.roles },
+              });
+
+              await roles.reduce(async (previousPromise, role) => {
+                let newData = await previousPromise;
+
+                const permissions = await models.entries.model.find({
+                  _id: { $in: role.data.permissions },
+                });
+                permissions.map((permission) => {
+                  newPermissions.push(permission.data.name);
+                });
+
+                return permissions;
+              }, Promise.resolve([]));
+
+              socketInfo.permissions.push(...newPermissions);
             } else {
               socket.emit(`receive-${args.requestId}`, {
                 success: false,
