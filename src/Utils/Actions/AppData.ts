@@ -194,72 +194,126 @@ export default [
     // --> Creates listeners for objecttypes and returns data
     // (filter, requestId, appId)
     key: "appListensForObjects",
-    action: (args, models, socket, socketInfo) => {
-      // First check read permission
-      models.apppermissions.model
-        .findOne({ appId: args.appId, objectId: args.type })
-        .then((permission) => {
-          if (permission) {
-            if (permission.permissions.includes("read")) {
-              // App permissions are there
-              // Check user permissions
-              models.objects.model
-                .findOne({ key: args.type })
-                .then((objectType) => {
-                  if (objectType) {
-                    let userPermission = false;
-                    objectType.permissions.read.map((p) => {
-                      if (socketInfo.permissions.includes(p)) {
-                        userPermission = true;
-                      }
-                    });
-                    if (userPermission) {
-                      // App & user permissions -> Find the actual data
-                      // Find data
-                      const returnData = () => {
-                        models.entries.model
-                          .find({ objectId: args.type, ...args.filter })
-                          .then((objects) => {
-                            socket.emit(`receive-${args.requestId}`, {
-                              success: true,
-                              data: objects,
-                            });
-                          });
-                      };
+    action: async (args, models, socket, socketInfo) => {
+      // First map permissions for the app
+      const appInfo = await models.entries.model.findOne({
+        objectId: "app",
+        "data.id": args.appId,
+      });
+      if (appInfo.data.root) {
+        // Root mode
 
-                      models.entries.listeners[args.requestId] = (change) => {
+        // Skip app permission check
+        models.objects.model.findOne({ key: args.type }).then((objectType) => {
+          if (objectType) {
+            let userPermission = false;
+            objectType.permissions.read.map((p) => {
+              if (socketInfo.permissions.includes(p)) {
+                userPermission = true;
+              }
+            });
+            if (userPermission) {
+              // App & user permissions -> Find the actual data
+              // Find data
+              const returnData = () => {
+                models.entries.model
+                  .find({ objectId: args.type, ...args.filter })
+                  .then((objects) => {
+                    socket.emit(`receive-${args.requestId}`, {
+                      success: true,
+                      data: objects,
+                    });
+                  });
+              };
+
+              models.entries.listeners[args.requestId] = (change) => {
+                returnData();
+              };
+              socketInfo.listeners.push(args.requestId);
+              returnData();
+              console.log(`App data request: ${args.requestId}`);
+            } else {
+              socket.emit(`receive-${args.requestId}`, {
+                success: false,
+                reason: "no-permission-user",
+              });
+            }
+          } else {
+            socket.emit(`receive-${args.requestId}`, {
+              success: false,
+              reason: "no-such-type",
+              request: { ...args, action: "appListensForObjects" },
+            });
+          }
+        });
+      } else {
+        // Non-root mode
+        // First check read permission
+        models.apppermissions.model
+          .findOne({ appId: args.appId, objectId: args.type })
+          .then((permission) => {
+            if (permission) {
+              if (permission.permissions.includes("read")) {
+                // App permissions are there
+                // Check user permissions
+                models.objects.model
+                  .findOne({ key: args.type })
+                  .then((objectType) => {
+                    if (objectType) {
+                      let userPermission = false;
+                      objectType.permissions.read.map((p) => {
+                        if (socketInfo.permissions.includes(p)) {
+                          userPermission = true;
+                        }
+                      });
+                      if (userPermission) {
+                        // App & user permissions -> Find the actual data
+                        // Find data
+                        const returnData = () => {
+                          models.entries.model
+                            .find({ objectId: args.type, ...args.filter })
+                            .then((objects) => {
+                              socket.emit(`receive-${args.requestId}`, {
+                                success: true,
+                                data: objects,
+                              });
+                            });
+                        };
+
+                        models.entries.listeners[args.requestId] = (change) => {
+                          returnData();
+                        };
+                        socketInfo.listeners.push(args.requestId);
                         returnData();
-                      };
-                      socketInfo.listeners.push(args.requestId);
-                      returnData();
-                      console.log(`App data request: ${args.requestId}`);
+                        console.log(`App data request: ${args.requestId}`);
+                      } else {
+                        socket.emit(`receive-${args.requestId}`, {
+                          success: false,
+                          reason: "no-permission-user",
+                        });
+                      }
                     } else {
                       socket.emit(`receive-${args.requestId}`, {
                         success: false,
-                        reason: "no-permission-user",
+                        reason: "no-such-type",
+                        request: { ...args, action: "appListensForObjects" },
                       });
                     }
-                  } else {
-                    socket.emit(`receive-${args.requestId}`, {
-                      success: false,
-                      reason: "no-such-type",
-                      request: { ...args, action: "appListensForObjects" },
-                    });
-                  }
+                  });
+              } else {
+                socket.emit(`receive-${args.requestId}`, {
+                  success: false,
+                  reason: "no-permission-app",
                 });
+              }
             } else {
               socket.emit(`receive-${args.requestId}`, {
                 success: false,
                 reason: "no-permission-app",
               });
             }
-          } else {
-            socket.emit(`receive-${args.requestId}`, {
-              success: false,
-              reason: "no-permission-app",
-            });
-          }
-        });
+          });
+      }
     },
   },
   {

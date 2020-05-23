@@ -11,6 +11,7 @@ mongoose.model(
       name: String,
       primary: String,
       icon: String,
+      app: String,
       name_plural: String,
       overviews: {},
       fields: {},
