@@ -22,15 +22,31 @@ export default [
 
           if (hasReadAccess) {
             // Find data
-            const returnData = () => {
-              models.entries.model
-                .find({ objectId: args.type, ...args.filter })
-                .then((objects) => {
-                  socket.emit(`receive-${args.requestId}`, {
-                    success: true,
-                    data: objects,
-                  });
-                });
+            const returnData = async () => {
+              const data = await models.entries.model.find({
+                objectId: args.type,
+                ...args.filter,
+              });
+
+              // Check if local permissions are applicable
+              data.map((dataItem, index) => {
+                if (dataItem.data.permission___view) {
+                  // If we have a local view field
+                  if (
+                    !socketInfo.permissions.includes(
+                      dataItem.data.permission___view
+                    )
+                  ) {
+                    // And the current socket doesn't have that permission
+                    data.splice(index, 1); // Splice it out
+                  }
+                }
+              });
+
+              socket.emit(`receive-${args.requestId}`, {
+                success: true,
+                data,
+              });
             };
 
             models.entries.listeners[args.requestId] = (change) => {
@@ -143,10 +159,10 @@ export default [
     // (requestId, objectId, toChange, type)
     key: "updateObject",
     action: (args, models, socket, socketInfo) => {
-      models.objects.model.findOne({ key: args.type }).then((objectType) => {
-        if (objectType) {
+      models.objects.model.findOne({ key: args.type }).then((model) => {
+        if (model) {
           let hasWriteAccess = false;
-          objectType.permissions.write.map((permission) => {
+          model.permissions.write.map((permission) => {
             if (socketInfo.permissions.includes(permission)) {
               hasWriteAccess = true;
             }
@@ -165,23 +181,25 @@ export default [
 
                 f.data
                   .validateData(
-                    objectType,
+                    model,
                     { ...args, object: newObject },
                     models,
                     entry._doc
                   )
                   .then(
                     async () => {
-                      entry.data = newObject;
+                      entry.data = f.data.transformData(
+                        { data: newObject, objectId: args.type },
+                        model
+                      ).data;
                       entry.markModified("data");
 
                       // Post process
-
                       entry.save().then(() => {
                         f.formulas.postSave(
                           entry,
                           args.toChange,
-                          objectType,
+                          model,
                           models
                         );
 
