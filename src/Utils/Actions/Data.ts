@@ -279,7 +279,7 @@ export default [
                 } else {
                   socket.emit(`receive-${args.requestId}`, {
                     success: false,
-                    reason: "delete-own-username",
+                    reason: "cannot-delete-self",
                   });
                 }
               } else {

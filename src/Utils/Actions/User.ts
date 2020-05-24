@@ -1,4 +1,5 @@
 import f from "../Functions";
+import mongoose from "mongoose";
 
 // Todo sanitize filter input???
 // --> It may be possible to send something else than arrays which may be a way into the database
