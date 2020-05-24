@@ -125,31 +125,44 @@ export default [
     action: (args, models, socket, socketInfo) => {
       models.objects.model.findOne({ key: args.type }).then((model) => {
         if (model) {
-          // Validate & save
-          f.data.validateData(model, args, models, false).then(
-            () => {
-              new models.entries.model(
-                f.data.transformData(
-                  { data: args.object, objectId: args.type },
-                  model,
-                  {}
-                )
-              )
-                .save()
-                .then((data) => {
-                  // Todo: postprocess (formulas)
-                  socket.emit(`receive-${args.requestId}`, {
-                    success: true,
-                  });
-                });
-            },
-            (feedback) => {
-              socket.emit(`receive-${args.requestId}`, {
-                success: false,
-                feedback,
-              });
+          let hasCreateAccess = false;
+          model.permissions.create.map((permission) => {
+            if (socketInfo.permissions.includes(permission)) {
+              hasCreateAccess = true;
             }
-          );
+          });
+          if (hasCreateAccess) {
+            // Validate & save
+            f.data.validateData(model, args, models, false).then(
+              () => {
+                new models.entries.model(
+                  f.data.transformData(
+                    { data: args.object, objectId: args.type },
+                    model,
+                    {}
+                  )
+                )
+                  .save()
+                  .then((data) => {
+                    // Todo: postprocess (formulas)
+                    socket.emit(`receive-${args.requestId}`, {
+                      success: true,
+                    });
+                  });
+              },
+              (feedback) => {
+                socket.emit(`receive-${args.requestId}`, {
+                  success: false,
+                  feedback,
+                });
+              }
+            );
+          } else {
+            socket.emit(`receive-${args.requestId}`, {
+              success: false,
+              reason: "no-create-permission",
+            });
+          }
         } else {
           socket.emit(`receive-${args.requestId}`, {
             success: false,
