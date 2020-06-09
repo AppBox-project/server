@@ -511,6 +511,7 @@ export default [
                   // Todo: postprocess (formulas)
                   socket.emit(`receive-${args.requestId}`, {
                     success: true,
+                    object: oldObject,
                   });
                 });
               },
