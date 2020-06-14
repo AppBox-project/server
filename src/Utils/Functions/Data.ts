@@ -289,7 +289,9 @@ export default {
                     // Post process: look for relevant triggers
                     Functions.process.triggerProcessForSingleObject(
                       args.objectId,
-                      model
+                      model,
+                      models,
+                      "updated"
                     );
 
                     socket.emit(`receive-${args.requestId}`, {

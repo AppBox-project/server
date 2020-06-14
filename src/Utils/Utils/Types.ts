@@ -53,3 +53,25 @@ interface ModelApiType {
   endpoint?: string;
   authentication?: "none" | "user";
 }
+
+// System
+export interface AppBoxData {
+  objects: {
+    model;
+    stream;
+    listeners: {};
+  };
+  entries: {
+    model;
+    stream;
+    listeners: {};
+  };
+  apppermissions: {
+    model;
+  };
+  usersettings: {
+    model;
+    stream;
+    listeners: {};
+  };
+}

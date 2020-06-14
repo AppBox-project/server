@@ -107,7 +107,9 @@ export default {
                 // Post process: look for relevant triggers
                 Functions.process.triggerProcessForSingleObject(
                   oldObject._id,
-                  model
+                  model,
+                  models,
+                  "updated"
                 );
                 socket.emit(`receive-${args.requestId}`, {
                   success: true,
