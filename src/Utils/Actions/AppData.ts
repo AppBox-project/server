@@ -465,75 +465,10 @@ export default [
     },
   },
   {
+    // This actions wrappers the appData variant of updateObject() so it can be called over the socket.
     key: "appUpdatesObject",
     action: async (args, models, socket, socketInfo) => {
-      if (
-        await Functions.appdata.checkUserObjectRights(
-          models,
-          socketInfo.permissions,
-          args.type,
-          ["write", "modifyOwn"]
-        )
-      ) {
-        if (
-          await Functions.appdata.checkAppObjectRights(
-            models,
-            args.appId,
-            args.type,
-            "create"
-          )
-        ) {
-          // We have permission. Create object
-          const model = await models.objects.model.findOne({ key: args.type });
-          const oldObject = await models.entries.model.findOne({
-            _id: args.id,
-          });
-
-          // Create the new object
-          const newObject = oldObject.data;
-          map(args.newObject, (v, k) => {
-            newObject[k] = v;
-          });
-
-          Functions.data
-            .validateData(
-              model,
-              { ...args, object: newObject },
-              models,
-              oldObject
-            )
-            .then(
-              () => {
-                oldObject.data = newObject;
-                oldObject.markModified("data");
-
-                oldObject.save().then(() => {
-                  // Todo: postprocess (formulas)
-                  socket.emit(`receive-${args.requestId}`, {
-                    success: true,
-                    object: oldObject,
-                  });
-                });
-              },
-              (feedback) => {
-                socket.emit(`receive-${args.requestId}`, {
-                  success: false,
-                  feedback,
-                });
-              }
-            );
-        } else {
-          socket.emit(`receive-${args.requestId}`, {
-            success: false,
-            reason: "no-create-permission-app",
-          });
-        }
-      } else {
-        socket.emit(`receive-${args.requestId}`, {
-          success: false,
-          reason: "no-create-permission-user",
-        });
-      }
+      Functions.appdata.updateObject(models, socketInfo, args, socket);
     },
   },
 ];

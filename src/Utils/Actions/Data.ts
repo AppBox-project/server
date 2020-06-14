@@ -177,77 +177,7 @@ export default [
     // (requestId, objectId, toChange, type)
     key: "updateObject",
     action: (args, models, socket, socketInfo) => {
-      models.objects.model.findOne({ key: args.type }).then((model) => {
-        if (model) {
-          let hasWriteAccess = false;
-          model.permissions.write.map((permission) => {
-            if (socketInfo.permissions.includes(permission)) {
-              hasWriteAccess = true;
-            }
-          });
-
-          // Validate & save
-          if (hasWriteAccess) {
-            models.entries.model
-              .findOne({ _id: args.objectId })
-              .then((entry) => {
-                // Create the new object
-                const newObject = entry._doc.data;
-                map(args.toChange, (v, k) => {
-                  newObject[k] = args.toChange[k];
-                });
-
-                f.data
-                  .validateData(
-                    model,
-                    { ...args, object: newObject },
-                    models,
-                    entry._doc
-                  )
-                  .then(
-                    async () => {
-                      entry.data = f.data.transformData(
-                        { data: newObject, objectId: args.type },
-                        model,
-                        args.toChange
-                      ).data;
-                      entry.markModified("data");
-
-                      // Post process
-                      entry.save().then(() => {
-                        f.formulas.postSave(
-                          entry,
-                          args.toChange,
-                          model,
-                          models
-                        );
-
-                        socket.emit(`receive-${args.requestId}`, {
-                          success: true,
-                        });
-                      });
-                    },
-                    (feedback) => {
-                      socket.emit(`receive-${args.requestId}`, {
-                        success: false,
-                        feedback,
-                      });
-                    }
-                  );
-              });
-          } else {
-            socket.emit(`receive-${args.requestId}`, {
-              success: false,
-              reason: "no-write-permission",
-            });
-          }
-        } else {
-          socket.emit(`receive-${args.requestId}`, {
-            success: false,
-            reason: "no-such-object",
-          });
-        }
-      });
+      f.data.updateObject(models, socketInfo, args, socket);
     },
   },
   {
@@ -305,7 +235,7 @@ export default [
     key: "updateMany",
     action: (args, models, socket, socketInfo) => {
       map(args.changes, (changes, id) => {
-        f.data.updateObject(models, id, changes).then(
+        f.data.updateManyObjects(models, id, changes).then(
           (success) => {
             socket.emit(`receive-${args.requestId}`, {
               success: true,

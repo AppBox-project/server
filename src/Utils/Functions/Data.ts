@@ -1,5 +1,6 @@
 import { map } from "lodash";
 import f from "../Functions";
+import Functions from "../Functions";
 
 // This is the rewritten version of validate data
 const validateNewObject = async (models, newObject, oldObject) => {
@@ -202,7 +203,8 @@ export default {
   // transformData()
   // --> Loop through the fields for a model and apply required transformations
   transformData,
-  updateObject: async (models, id, changes) => {
+  updateManyObjects: async (models, id, changes) => {
+    // This is a weird version of the function I created for updateMany. Todo: merge with main updateObject
     // Todo: this may require a permissions check (see older functions)
     return new Promise(async (resolve, reject) => {
       const oldObject = await models.entries.model.findOne({ _id: id });
@@ -226,6 +228,94 @@ export default {
       } else {
         // Failed
         reject(validations);
+      }
+    });
+  },
+  // ----------> updateObject
+  // This command updates an object and performs all required checks
+  // - models: mongoose object
+  // - socketInfo: information about executing socket
+  // - args: arguments as supplied by the call
+  // --- type: model type to be updated
+  // --- objectId: object id
+  // --- toChange: data that needs to be changed
+  // --- requestId: ID as supplied by the request
+  // - socket: the calling socket
+  updateObject: async (
+    models,
+    socketInfo,
+    args: { type: string; objectId: string; toChange; requestId: string },
+    socket
+  ) => {
+    models.objects.model.findOne({ key: args.type }).then((model) => {
+      if (model) {
+        let hasWriteAccess = false;
+        model.permissions.write.map((permission) => {
+          if (socketInfo.permissions.includes(permission)) {
+            hasWriteAccess = true;
+          }
+        });
+
+        // Validate & save
+        if (hasWriteAccess) {
+          models.entries.model.findOne({ _id: args.objectId }).then((entry) => {
+            // Create the new object
+            const newObject = entry._doc.data;
+            map(args.toChange, (v, k) => {
+              newObject[k] = args.toChange[k];
+            });
+
+            f.data
+              .validateData(
+                model,
+                { ...args, object: newObject },
+                models,
+                entry._doc
+              )
+              .then(
+                async () => {
+                  entry.data = f.data.transformData(
+                    { data: newObject, objectId: args.type },
+                    model,
+                    args.toChange
+                  ).data;
+                  entry.markModified("data");
+
+                  // Post process
+                  entry.save().then(() => {
+                    // We're done. The object was saved.
+                    // Post process: Recalculate formulas
+                    f.formulas.postSave(entry, args.toChange, model, models);
+                    // Post process: look for relevant triggers
+                    Functions.process.triggerProcessForSingleObject(
+                      args.objectId,
+                      model
+                    );
+
+                    socket.emit(`receive-${args.requestId}`, {
+                      success: true,
+                    });
+                  });
+                },
+                (feedback) => {
+                  socket.emit(`receive-${args.requestId}`, {
+                    success: false,
+                    feedback,
+                  });
+                }
+              );
+          });
+        } else {
+          socket.emit(`receive-${args.requestId}`, {
+            success: false,
+            reason: "no-write-permission",
+          });
+        }
+      } else {
+        socket.emit(`receive-${args.requestId}`, {
+          success: false,
+          reason: "no-such-object",
+        });
       }
     });
   },
