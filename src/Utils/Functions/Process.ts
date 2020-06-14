@@ -1,4 +1,5 @@
 import { ModelType, AppBoxData } from "../Utils/Types";
+var cron = require("node-cron");
 
 export default {
   // ----------> triggerProcessForSingleObject
@@ -32,6 +33,40 @@ export default {
       });
     });
   },
+  registerCronjobs: async (models: AppBoxData) => {
+    console.log("Registering cron jobs");
+
+    const processes = await models.entries.model.find({
+      objectId: "system-processes",
+    });
+
+    processes.map((process) => {
+      process.data.triggers.map((trigger) => {
+        if (trigger.type === "time") {
+          console.log(`Registering cron for '${process.data.name}'`);
+
+          cron.schedule(
+            `${trigger.time.second} ${trigger.time.minute} ${trigger.time.hour} ${trigger.time.dom} ${trigger.time.month} ${trigger.time.dow}`,
+            async () => {
+              // Cron triggered
+              console.log(`Process: timed trigger for ${process.data.name}.`);
+              const objects = await models.entries.model.find({
+                objectId: process.data.context,
+              });
+              objects.map((object) => {
+                executeProcessAction(
+                  process.data.actions[0],
+                  object,
+                  models,
+                  object._id
+                );
+              });
+            }
+          );
+        }
+      });
+    });
+  },
 };
 
 // ----------> executeProcess
@@ -40,7 +75,6 @@ export default {
 // - objectModel: the model for the object that was just updated.
 // - models: AppBoxData
 // - action: "created" or "updated"
-
 const executeProcess = async (
   objectId: string,
   objectModel: ModelType,
@@ -51,9 +85,8 @@ const executeProcess = async (
     `Process: ${objectModel.name} ${objectId} has triggered process '${process.data.name}'.`
   );
   const object = await models.entries.model.findOne({ _id: objectId });
-  process.data.actions.map((action) => {
-    executeProcessAction(action, object, models, objectId);
-  });
+
+  executeProcessAction(process.data.actions[0], object, models, objectId);
 };
 
 const executeProcessAction = (
@@ -110,7 +143,7 @@ const performActions = (
       switch (subAction.action) {
         case "delete":
           models.entries.model.deleteOne({ _id: objectId }).then((result) => {
-            console.log(result);
+            console.log("Delete succesful"); // Odd: doesn't delete without this.
           });
           break;
         default:

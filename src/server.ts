@@ -93,6 +93,9 @@ axios
         initialised = false;
       }
 
+      // Register cron jobs
+      f.process.registerCronjobs(models);
+
       // Exclude react build resources
       // Catch all regular build files
       // Todo this can be less ugly
