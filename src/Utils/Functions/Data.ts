@@ -321,4 +321,96 @@ export default {
       }
     });
   },
+  // ----------> insertObject
+  // This command inserts an object and performs all required checks
+  // - models: mongoose object
+  // - socketInfo: information about executing socket
+  // - args: arguments as supplied by the call
+  // --- type: model type to be updated
+  // --- objectId: object id
+  // --- object: data that needs to be changed
+  // --- requestId: ID as supplied by the request
+  // - socket: the calling socket
+  insertObject: async (
+    models,
+    socketInfo,
+    args: { type: string; object; requestId: string },
+    socket
+  ) => {
+    models.objects.model.findOne({ key: args.type }).then((model) => {
+      if (model) {
+        let hasCreateAccess = false;
+        model.permissions.create.map((permission) => {
+          if (
+            socketInfo.permissions.includes(permission) ||
+            socketInfo.permissions.includes("system")
+          ) {
+            hasCreateAccess = true;
+          }
+        });
+        if (hasCreateAccess) {
+          // Validate & save
+          f.data.validateData(model, args, models, false).then(
+            () => {
+              new models.entries.model(
+                f.data.transformData(
+                  { data: args.object, objectId: args.type },
+                  model,
+                  {}
+                )
+              )
+                .save()
+                .then((data) => {
+                  // Todo: postprocess (formulas)
+                  if (typeof socket === "function") {
+                    socket({ success: true });
+                  } else {
+                    socket.emit(`receive-${args.requestId}`, {
+                      success: true,
+                    });
+                  }
+                });
+            },
+            (feedback) => {
+              if (typeof socket === "function") {
+                socket({
+                  success: false,
+                  feedback,
+                });
+              } else {
+                socket.emit(`receive-${args.requestId}`, {
+                  success: false,
+                  feedback,
+                });
+              }
+            }
+          );
+        } else {
+          if (typeof socket === "function") {
+            socket({
+              success: false,
+              reason: "no-create-permission",
+            });
+          } else {
+            socket.emit(`receive-${args.requestId}`, {
+              success: false,
+              reason: "no-create-permission",
+            });
+          }
+        }
+      } else {
+        if (typeof socket === "function") {
+          socket({
+            success: false,
+            reason: "no-such-object",
+          });
+        } else {
+          socket.emit(`receive-${args.requestId}`, {
+            success: false,
+            reason: "no-such-object",
+          });
+        }
+      }
+    });
+  },
 };

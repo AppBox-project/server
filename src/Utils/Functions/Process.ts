@@ -1,4 +1,5 @@
 import { ModelType, AppBoxData } from "../Utils/Types";
+import Functions from ".";
 var cron = require("node-cron");
 
 export default {
@@ -50,17 +51,26 @@ export default {
             async () => {
               // Cron triggered
               console.log(`Process: timed trigger for ${process.data.name}.`);
-              const objects = await models.entries.model.find({
-                objectId: process.data.context,
-              });
-              objects.map((object) => {
+              if (process.data.context === "system" || !process.data.context) {
                 executeProcessAction(
                   process.data.actions[0],
-                  object,
+                  undefined,
                   models,
-                  object._id
+                  undefined
                 );
-              });
+              } else {
+                const objects = await models.entries.model.find({
+                  objectId: process.data.context,
+                });
+                objects.map((object) => {
+                  executeProcessAction(
+                    process.data.actions[0],
+                    object,
+                    models,
+                    object._id
+                  );
+                });
+              }
             }
           );
         }
@@ -128,7 +138,12 @@ const executeProcessAction = (
 };
 
 const performActions = (
-  actions: [{ label?: string; actions: [{ action: string }] }],
+  actions: [
+    {
+      label?: string;
+      actions: [{ action: string; type: string; object: string; newObject? }];
+    }
+  ],
   models: AppBoxData,
   objectId: string
 ) => {
@@ -145,6 +160,30 @@ const performActions = (
           models.entries.model.deleteOne({ _id: objectId }).then((result) => {
             console.log("Delete succesful"); // Odd: doesn't delete without this.
           });
+          break;
+        case "create":
+          const newObject = {};
+          subAction.newObject.map((field) => {
+            newObject[field.key] = field.value;
+          });
+          console.log("Creating new entry", newObject);
+          Functions.data.insertObject(
+            models,
+            { permissions: ["system"] },
+            {
+              type: subAction.object,
+              requestId: undefined,
+              object: newObject,
+            },
+            (response) => {
+              if (response.success) {
+                console.log("Succesfully created object.");
+              } else {
+                console.log(response);
+              }
+            }
+          );
+
           break;
         default:
           console.log(`Process: Unknown action ${subAction.action}`);
