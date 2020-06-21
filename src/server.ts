@@ -10,12 +10,14 @@ import f from "./Utils/Functions";
 const fs = require("fs");
 import axios from "axios";
 import { initServer } from "./Utils/Actions/General";
+import { createIndex } from "./Utils/Utils/Index";
 
 // Models
 require("./Utils/Models/Objects");
 require("./Utils/Models/Entries");
 require("./Utils/Models/AppPermissions");
 require("./Utils/Models/UserSettings");
+require("./Utils/Models/IndexedObjects");
 
 // Start up server
 const app = express();
@@ -36,6 +38,7 @@ axios
       }/AppBox`,
       {
         useNewUrlParser: true,
+        useCreateIndex: true,
         useUnifiedTopology: true,
       }
     );
@@ -56,6 +59,9 @@ axios
         },
         apppermissions: {
           model: mongoose.model("AppPermissions"),
+        },
+        indexedobjects: {
+          model: mongoose.model("IndexedObjects"),
         },
         usersettings: {
           model: mongoose.model("UserSettings"),
@@ -95,6 +101,7 @@ axios
 
       // Register cron jobs
       f.process.registerCronjobs(models);
+      createIndex(models);
 
       // Exclude react build resources
       // Catch all regular build files
