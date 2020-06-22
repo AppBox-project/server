@@ -50,6 +50,7 @@ export default [
       const { searchableIndex } = getIndex();
       const results = fuzzysort.go(args.query, searchableIndex, {
         key: "keywords",
+        limit: 15,
       });
       const response = [];
       results.map((r) => {
