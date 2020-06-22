@@ -85,25 +85,31 @@ const updateModelIndex = (change) => {
 
 // Update indexed entry when an indexed field changes
 const updateObjectIndex = (change) => {
-  const newObject = change.fullDocument;
-  const oldObjectIndex = findIndex(searchableIndex, (o) => {
-    return o.id === newObject._id.toString();
-  });
-  const model = find(modelIndex, (o) => o.key === newObject.objectId);
-
-  const io = {
-    primary: newObject.data[model.primary],
-    type: model.key,
-    id: newObject._id.toString(),
-  };
-  let keyword = `${newObject.data[model.primary]}`;
-  if (model.indexed_fields) {
-    model.indexed_fields.split(",").map((field, index) => {
-      keyword = `${keyword} ${newObject.data[field]}`;
+  if (change.operationType === "update") {
+    // Update operation (by UI)
+    // Todo
+  } else if (change.operationType === "replace") {
+    // Replace operation (by database)
+    const newObject = change.fullDocument;
+    const oldObjectIndex = findIndex(searchableIndex, (o) => {
+      return o.id === newObject._id.toString();
     });
+    const model = find(modelIndex, (o) => o.key === newObject.objectId);
+
+    const io = {
+      primary: newObject.data[model.primary],
+      type: model.key,
+      id: newObject._id.toString(),
+    };
+    let keyword = `${newObject.data[model.primary]}`;
+    if (model.indexed_fields) {
+      model.indexed_fields.split(",").map((field, index) => {
+        keyword = `${keyword} ${newObject.data[field]}`;
+      });
+    }
+    io["keywords"] = keyword;
+    searchableIndex[oldObjectIndex] = io;
   }
-  io["keywords"] = keyword;
-  searchableIndex[oldObjectIndex] = io;
 };
 
 const updateModelObjectIndex = (model) => {
