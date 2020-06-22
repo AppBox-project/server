@@ -13,6 +13,8 @@ mongoose.model(
       icon: String,
       app: String,
       name_plural: String,
+      indexed: Boolean,
+      indexed_fields: String,
       overviews: {},
       fields: {},
       api: {

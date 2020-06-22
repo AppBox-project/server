@@ -47,19 +47,13 @@ export default [
   {
     key: "search",
     action: async (args, models, socket, socketInfo) => {
-      const { index, keys, modelIndex } = getIndex();
-
-      const results = fuzzysort.go(args.query, index, {
-        keys,
-        limit: 10,
-        scoreFn: (a) =>
-          Math.max(a[0] ? a[0].score : -1000, a[1] ? a[1].score - 100 : -1000),
+      const { searchableIndex } = getIndex();
+      const results = fuzzysort.go(args.query, searchableIndex, {
+        key: "keywords",
       });
-
       const response = [];
       results.map((r) => {
-        const primary = modelIndex[r.obj.objectId].primary;
-        response.push({ label: r.obj.data[primary], value: r.obj._id });
+        response.push({ label: r.obj.primary, key: r.obj.id, ...r });
       });
       socket.emit(`receive-${args.requestId}`, response);
     },

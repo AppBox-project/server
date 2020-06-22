@@ -17,7 +17,6 @@ require("./Utils/Models/Objects");
 require("./Utils/Models/Entries");
 require("./Utils/Models/AppPermissions");
 require("./Utils/Models/UserSettings");
-require("./Utils/Models/IndexedObjects");
 
 // Start up server
 const app = express();
@@ -59,9 +58,6 @@ axios
         },
         apppermissions: {
           model: mongoose.model("AppPermissions"),
-        },
-        indexedobjects: {
-          model: mongoose.model("IndexedObjects"),
         },
         usersettings: {
           model: mongoose.model("UserSettings"),
