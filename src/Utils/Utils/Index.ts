@@ -20,7 +20,7 @@ export const createIndex = async (models) => {
     updateModelIndex(change);
   });
   models.entries.stream.on("change", (change) => {
-    updateObjectIndex(change);
+    updateObjectIndex(change, models);
   });
 };
 
@@ -84,11 +84,40 @@ const updateModelIndex = (change) => {
 };
 
 // Update indexed entry when an indexed field changes
-const updateObjectIndex = (change) => {
+const updateObjectIndex = async (change, models) => {
+  // Todo: delete
   if (change.operationType === "update") {
     // Update operation (by UI)
-    // Todo
+    // Replace old object by new object in the index
+    console.log(
+      "Object changed. Re-indexing.",
+      change.documentKey._id.toString()
+    );
+    let newObject = await models.entries.model.find({
+      _id: change.documentKey._id,
+    });
+    newObject = newObject[0];
+    const oldObjectIndex = findIndex(searchableIndex, (o) => {
+      return o.id === change.documentKey._id.toString();
+    });
+    const model = find(modelIndex, (o) => o.key === newObject.objectId);
+
+    const io = {
+      primary: newObject.data[model.primary],
+      type: model.key,
+      id: newObject._id.toString(),
+    };
+    let keyword = `${newObject.data[model.primary]}`;
+    if (model.indexed_fields) {
+      model.indexed_fields.split(",").map((field, index) => {
+        keyword = `${keyword} ${newObject.data[field]}`;
+      });
+    }
+    io["keywords"] = keyword;
+    searchableIndex[oldObjectIndex] = io;
   } else if (change.operationType === "replace") {
+    console.log("Change, rebuilding index.");
+
     // Replace operation (by database)
     const newObject = change.fullDocument;
     const oldObjectIndex = findIndex(searchableIndex, (o) => {
@@ -109,6 +138,26 @@ const updateObjectIndex = (change) => {
     }
     io["keywords"] = keyword;
     searchableIndex[oldObjectIndex] = io;
+  } else if (change.operationType === "insert") {
+    console.log("Insertion, indexing.");
+
+    // Replace operation (by database)
+    const newObject = change.fullDocument;
+    const model = find(modelIndex, (o) => o.key === newObject.objectId);
+
+    const io = {
+      primary: newObject.data[model.primary],
+      type: model.key,
+      id: newObject._id.toString(),
+    };
+    let keyword = `${newObject.data[model.primary]}`;
+    if (model.indexed_fields) {
+      model.indexed_fields.split(",").map((field, index) => {
+        keyword = `${keyword} ${newObject.data[field]}`;
+      });
+    }
+    io["keywords"] = keyword;
+    searchableIndex.push(io);
   }
 };
 
