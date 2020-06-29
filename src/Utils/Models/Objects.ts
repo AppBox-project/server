@@ -15,6 +15,7 @@ mongoose.model(
       name_plural: String,
       indexed: Boolean,
       indexed_fields: String,
+      handlers: {},
       overviews: {},
       fields: {},
       api: {
