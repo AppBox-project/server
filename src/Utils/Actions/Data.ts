@@ -6,6 +6,19 @@ import f from "../Functions";
 
 export default [
   {
+    // --> Finds model from an object by ID
+    // (id, requestId)
+    key: "getModelFromId",
+    action: async (args, models, socket, socketInfo) => {
+      if (typeof args.objectId === "string") {
+        const object = await models.entries.model.findOne({
+          _id: args.objectId,
+        });
+        socket.emit(`receive-${args.requestId}`, object.objectId);
+      }
+    },
+  },
+  {
     // --> Creates listeners for object and returns data
     // (requestId, type, filter)
     key: "listenForObjects",
