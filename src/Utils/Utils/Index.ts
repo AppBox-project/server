@@ -86,7 +86,16 @@ const updateModelIndex = (change) => {
 // Update indexed entry when an indexed field changes
 const updateObjectIndex = async (change, models) => {
   // Todo: delete
-  if (change.operationType === "update") {
+  if (change.operationType === "delete") {
+    const oldObjectIndex = findIndex(searchableIndex, (o) => {
+      return o.id === change.documentKey._id.toString();
+    });
+    if (oldObjectIndex) {
+      delete searchableIndex[oldObjectIndex]
+      console.log('Deletion: removed from index');
+    }
+
+  } else if (change.operationType === "update") {
     // Update operation (by UI)
     // Replace old object by new object in the index
     console.log(
