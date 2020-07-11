@@ -29,7 +29,7 @@ let io = require("socket.io")(http);
 axios
   .get(`http://${process.env.dbUrl ? process.env.dbUrl : "192.168.0.2:27017"}`)
   .then(() => {
-    console.log("MongoDB server seems to be in online.");
+    console.log("Mongodb server is online!");
 
     mongoose.connect(
       `mongodb://${

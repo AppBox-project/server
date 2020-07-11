@@ -34,7 +34,10 @@ const executeReadApi = async (models, objectId, req, res, next) => {
         if (req.query) {
           const requirements = {};
           map(req.query, (value, key) => {
-            requirements[`data.${key}`] = value;
+            if (key !== "baseUrl") {
+              // Skip these reserved values
+              requirements[`data.${key}`] = value;
+            }
           });
           objects = await models.entries.model.find({
             objectId,
@@ -50,7 +53,14 @@ const executeReadApi = async (models, objectId, req, res, next) => {
           const modifiers = [];
           if (field.type === "picture") {
             objects.map((object) => {
-              object.data[fieldKey] = { url: baseUrl + object.data[fieldKey] };
+              object.data[fieldKey] = {
+                url:
+                  (req.query.baseUrl
+                    ? req.query.baseUrl === "base"
+                      ? baseUrl
+                      : req.query.baseUrl
+                    : "") + object.data[fieldKey],
+              };
             });
           }
         });

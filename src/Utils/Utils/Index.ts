@@ -88,13 +88,12 @@ const updateObjectIndex = async (change, models) => {
   // Todo: delete
   if (change.operationType === "delete") {
     const oldObjectIndex = findIndex(searchableIndex, (o) => {
-      return o.id === change.documentKey._id.toString();
+      return o?.id === change.documentKey._id.toString();
     });
     if (oldObjectIndex) {
-      delete searchableIndex[oldObjectIndex]
-      console.log('Deletion: removed from index');
+      delete searchableIndex[oldObjectIndex];
+      console.log("Deletion: removed from index");
     }
-
   } else if (change.operationType === "update") {
     // Update operation (by UI)
     // Replace old object by new object in the index
@@ -107,7 +106,7 @@ const updateObjectIndex = async (change, models) => {
     });
     newObject = newObject[0];
     const oldObjectIndex = findIndex(searchableIndex, (o) => {
-      return o.id === change.documentKey._id.toString();
+      return o?.id === change.documentKey._id.toString();
     });
     const model = find(modelIndex, (o) => o.key === newObject.objectId);
 
@@ -130,7 +129,7 @@ const updateObjectIndex = async (change, models) => {
     // Replace operation (by database)
     const newObject = change.fullDocument;
     const oldObjectIndex = findIndex(searchableIndex, (o) => {
-      return o.id === newObject._id.toString();
+      return o?.id === newObject._id.toString();
     });
     const model = find(modelIndex, (o) => o.key === newObject.objectId);
 
