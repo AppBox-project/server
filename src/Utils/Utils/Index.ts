@@ -91,8 +91,10 @@ const updateObjectIndex = async (change, models) => {
       return o?.id === change.documentKey._id.toString();
     });
     if (oldObjectIndex) {
-      delete searchableIndex[oldObjectIndex];
-      console.log("Deletion: removed from index");
+      if (oldObjectIndex > -1) {
+        searchableIndex.splice(oldObjectIndex, 1);
+        console.log(`Deletion: removed item #${oldObjectIndex} from index`);
+      }
     }
   } else if (change.operationType === "update") {
     // Update operation (by UI)
