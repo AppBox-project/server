@@ -34,7 +34,7 @@ const executeReadApi = async (models, objectId, req, res, next) => {
         if (req.query) {
           const requirements = {};
           map(req.query, (value, key) => {
-            if (key !== "baseUrl") {
+            if (key !== "baseUrl" && key != "addToEachObject") {
               // Skip these reserved values
               requirements[`data.${key}`] = value;
             }
@@ -48,6 +48,7 @@ const executeReadApi = async (models, objectId, req, res, next) => {
           objects = await models.entries.model.find({ objectId });
         }
         // Modifiers to apply to data
+        // Todo: improve logic
         map(model.fields, (field, fieldKey) => {
           // Modifiers to apply to data
           const modifiers = [];
@@ -64,6 +65,20 @@ const executeReadApi = async (models, objectId, req, res, next) => {
             });
           }
         });
+        // addToEachObject
+        // Adds array to the existing object
+        if (req.query.addToEachObject) {
+          const addToEachObject = {};
+          req.query.addToEachObject.split(";").map((k) => {
+            const parts = k.split(":");
+            addToEachObject[parts[0]] = parts[1];
+          });
+          objects.map((object, index) => {
+            const newObject = object;
+            newObject.data = { ...newObject.data, ...addToEachObject };
+            objects[index] = newObject;
+          });
+        }
 
         res.send(JSON.stringify(objects));
       }
