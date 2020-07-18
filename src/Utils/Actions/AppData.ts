@@ -426,13 +426,13 @@ export default [
         } else {
           socket.emit(`receive-${args.requestId}`, {
             success: false,
-            reason: "no-create-permission-app",
+            reason: "no-delete-permission-app",
           });
         }
       } else {
         socket.emit(`receive-${args.requestId}`, {
           success: false,
-          reason: "no-create-permission-user",
+          reason: "no-delete-permission-user",
         });
       }
     },
