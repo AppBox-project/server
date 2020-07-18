@@ -71,7 +71,7 @@ export default [
             };
             socketInfo.listeners.push(args.requestId);
             returnData();
-            console.log(`Data request: ${args.requestId}`);
+            //console.log(`Data request: ${args.requestId}`);
           } else {
             socket.emit(`receive-${args.requestId}`, {
               success: false,
@@ -93,7 +93,7 @@ export default [
     // --> Cleans up listeners for object
     key: "unlistenForObjects",
     action: (args, models, socket, socketInfo) => {
-      console.log(`Cleaning up data request ${args.requestId}`);
+      //console.log(`Cleaning up data request ${args.requestId}`);
       delete models.entries.listeners[args.requestId];
       remove(socketInfo.listeners, (o) => {
         return o === args.requestId;
@@ -117,14 +117,14 @@ export default [
       };
       socketInfo.listeners.push(args.requestId);
       returnData();
-      console.log(`Object type request: ${args.requestId}`);
+      //console.log(`Object type request: ${args.requestId}`);
     },
   },
   {
     // --> Cleans up listeners for object
     key: "unlistenForObjectTypes",
     action: (args, models, socket, socketInfo) => {
-      console.log(`Cleaning up data request ${args.requestId}`);
+      //console.log(`Cleaning up data request ${args.requestId}`);
       delete models.objects.listeners[args.requestId];
       remove(socketInfo.listeners, (o) => {
         return o === args.requestId;

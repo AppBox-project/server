@@ -133,7 +133,7 @@ export default [
         };
         socketInfo.listeners.push(args.requestId);
         returnData();
-        console.log(`App object type request: ${args.requestId}`);
+        //console.log(`App object type request: ${args.requestId}`);
       } else {
         // Regular mode
         models.apppermissions.model
@@ -231,7 +231,7 @@ export default [
               };
               socketInfo.listeners.push(args.requestId);
               returnData();
-              console.log(`App data request: ${args.requestId}`);
+              //console.log(`App data request: ${args.requestId}`);
             } else {
               socket.emit(`receive-${args.requestId}`, {
                 success: false,
@@ -285,7 +285,7 @@ export default [
                         };
                         socketInfo.listeners.push(args.requestId);
                         returnData();
-                        console.log(`App data request: ${args.requestId}`);
+                        //console.log(`App data request: ${args.requestId}`);
                       } else {
                         socket.emit(`receive-${args.requestId}`, {
                           success: false,
@@ -320,7 +320,7 @@ export default [
     // --> Cleans up listeners for object
     key: "appUnlistensForObjects",
     action: (args, models, socket, socketInfo) => {
-      console.log(`Cleaning up data request ${args.requestId}`);
+      //console.log(`Cleaning up data request ${args.requestId}`);
       delete models.entries.listeners[args.requestId];
       remove(socketInfo.listeners, (o) => {
         return o === args.requestId;
