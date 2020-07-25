@@ -14,6 +14,7 @@ import { createIndex } from "./Utils/Utils/Index";
 
 // Models
 require("./Utils/Models/Objects");
+require("./Utils/Models/Archive");
 require("./Utils/Models/Entries");
 require("./Utils/Models/AppPermissions");
 require("./Utils/Models/UserSettings");
@@ -49,6 +50,10 @@ axios
         objects: {
           model: mongoose.model("Objects"),
           stream: db.collection("objects").watch(),
+          listeners: {},
+        },
+        archive: {
+          model: mongoose.model("Archive"),
           listeners: {},
         },
         entries: {
