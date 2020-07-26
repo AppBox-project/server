@@ -9,6 +9,5 @@ mongoose.model(
     key: String,
     objectId: String,
     data: Schema.Types.Mixed,
-    archivedOn: Schema.Types.Mixed,
   })
 );

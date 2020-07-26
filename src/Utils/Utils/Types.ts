@@ -25,6 +25,8 @@ export interface ModelType {
     modifyOwn: [string];
     write: [string];
     deleteOwn: [string];
+    archive: [string];
+    archiveOwn: [string];
   };
   _id: any;
 }
@@ -74,4 +76,11 @@ export interface AppBoxData {
     stream;
     listeners: {};
   };
+}
+
+export interface SocketInfoType {
+  listeners: [];
+  permissions: [string];
+  username: string;
+  identified: boolean;
 }

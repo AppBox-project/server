@@ -44,6 +44,8 @@ mongoose.model(
         write: [String],
         delete: [String],
         deleteOwn: [String],
+        archive: [String],
+        archiveOwn: [String],
       },
     },
     { strict: false }

@@ -1,5 +1,6 @@
 import { remove, map } from "lodash";
 import Functions from "../Functions";
+import { ModelType, SocketInfoType } from "../Utils/Types";
 
 // Todo sanitize filter input???
 // --> It may be possible to send something else than arrays which may be a way into the database
@@ -9,7 +10,7 @@ export default [
   //{ newModel, requestId, appId }
   {
     key: "appCreatesModel",
-    action: async (args, models, socket, socketInfo) => {
+    action: async (args, models, socket, socketInfo: SocketInfoType) => {
       const app = await models.entries.model.findOne({
         objectId: "app",
         "data.id": args.appId,
@@ -41,7 +42,7 @@ export default [
   },
   {
     key: "appListensForModel",
-    action: async (args, models, socket, socketInfo) => {
+    action: async (args, models, socket, socketInfo: SocketInfoType) => {
       const returnData = async () => {
         // Check app permissions
         const permissions = await models.apppermissions.model.findOne({
@@ -77,7 +78,7 @@ export default [
   {
     // --> Cleans up listeners for object
     key: "appUnlistensForModel",
-    action: (args, models, socket, socketInfo) => {
+    action: (args, models, socket, socketInfo: SocketInfoType) => {
       delete models.objects.listeners[args.requestId];
       remove(socketInfo.listeners, (o) => {
         return o === args.requestId;
@@ -89,7 +90,7 @@ export default [
     // --> Creates listeners for objecttypes and returns data
     // (filter, requestId, appId)
     key: "appListensForObjectTypes",
-    action: async (args, models, socket, socketInfo) => {
+    action: async (args, models, socket, socketInfo: SocketInfoType) => {
       // First map permissions for the app
       const appInfo = await models.entries.model.findOne({
         objectId: "app",
@@ -183,7 +184,7 @@ export default [
   {
     // --> Cleans up listeners for object
     key: "appUnlistensForObjectTypes",
-    action: (args, models, socket, socketInfo) => {
+    action: (args, models, socket, socketInfo: SocketInfoType) => {
       delete models.objects.listeners[args.requestId];
       remove(socketInfo.listeners, (o) => {
         return o === args.requestId;
@@ -194,7 +195,7 @@ export default [
     // --> Creates listeners for objecttypes and returns data
     // (filter, requestId, appId)
     key: "appListensForObjects",
-    action: async (args, models, socket, socketInfo) => {
+    action: async (args, models, socket, socketInfo: SocketInfoType) => {
       // First map permissions for the app
       const appInfo = await models.entries.model.findOne({
         objectId: "app",
@@ -319,7 +320,7 @@ export default [
   {
     // --> Cleans up listeners for object
     key: "appUnlistensForObjects",
-    action: (args, models, socket, socketInfo) => {
+    action: (args, models, socket, socketInfo: SocketInfoType) => {
       //console.log(`Cleaning up data request ${args.requestId}`);
       delete models.entries.listeners[args.requestId];
       remove(socketInfo.listeners, (o) => {
@@ -329,7 +330,7 @@ export default [
   },
   {
     key: "appInsertsObject",
-    action: async (args, models, socket, socketInfo) => {
+    action: async (args, models, socket, socketInfo: SocketInfoType) => {
       if (
         await Functions.appdata.checkUserObjectRights(
           models,
@@ -398,7 +399,7 @@ export default [
   },
   {
     key: "appDeletesObject",
-    action: async (args, models, socket, socketInfo) => {
+    action: async (args, models, socket, socketInfo: SocketInfoType) => {
       if (
         await Functions.appdata.checkUserObjectRights(
           models,
@@ -469,6 +470,55 @@ export default [
     key: "appUpdatesObject",
     action: async (args, models, socket, socketInfo) => {
       Functions.appdata.updateObject(models, socketInfo, args, socket);
+    },
+  },
+  {
+    // This actions archives an object by moving it into a seperate, less important database
+    key: "appArchivesObject",
+    action: async (args, models, socket, socketInfo: SocketInfoType) => {
+      // Filter app permission
+      const permission = await models.apppermissions.model.findOne({
+        appId: args.appId,
+        objectId: args.modelId,
+      });
+
+      if ((permission?.permissions || []).includes("archive")) {
+        const model: ModelType = await models.objects.model.findOne({
+          key: args.modelId,
+        });
+        let hasArchivePermission = false;
+
+        (model?.permissions?.archive || []).map((permissionRequired) => {
+          if (socketInfo.permissions.includes(permissionRequired)) {
+            hasArchivePermission = true;
+          }
+        });
+
+        if (hasArchivePermission) {
+          // Permissions are there
+          const object = await models.entries.model.findOne({
+            _id: args.objectId,
+          });
+
+          await models.archive.model.create({
+            key: object._id,
+            objectId: object.objectId,
+            data: object.data,
+          });
+
+          console.log("inserted");
+        } else {
+          socket.emit(`receive-${args.requestId}`, {
+            success: false,
+            reason: "no-archive-permission-user",
+          });
+        }
+      } else {
+        socket.emit(`receive-${args.requestId}`, {
+          success: false,
+          reason: "no-archive-permission-app",
+        });
+      }
     },
   },
 ];
