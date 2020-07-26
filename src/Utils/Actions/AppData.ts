@@ -49,7 +49,7 @@ export default [
           objectId: args.modelId,
         });
 
-        if (permissions.permissions.includes("read")) {
+        if ((permissions?.permissions || []).includes("read")) {
           // Check succesful
           // Send data
           const model = await models.objects.model.findOne({
