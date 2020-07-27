@@ -506,7 +506,10 @@ export default [
             data: object.data,
           });
 
-          console.log("inserted");
+          object.delete();
+          socket.emit(`receive-${args.requestId}`, {
+            success: true,
+          });
         } else {
           socket.emit(`receive-${args.requestId}`, {
             success: false,
