@@ -361,7 +361,10 @@ export default {
               )
                 .save()
                 .then((data) => {
-                  // Todo: postprocess (formulas)
+                  // We're done. The object was saved.
+                  // Post process: Recalculate formulas
+                  f.formulas.postSave(data, data.data, model, models);
+
                   if (typeof socket === "function") {
                     socket({ success: true });
                   } else {
