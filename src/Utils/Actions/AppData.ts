@@ -488,11 +488,13 @@ export default [
         });
         let hasArchivePermission = false;
 
-        (model?.permissions?.archive || []).map((permissionRequired) => {
-          if (socketInfo.permissions.includes(permissionRequired)) {
-            hasArchivePermission = true;
+        (model?.permissions?.archive || []).map(
+          (permissionRequired: string) => {
+            if (socketInfo.permissions.includes(permissionRequired)) {
+              hasArchivePermission = true;
+            }
           }
-        });
+        );
 
         if (hasArchivePermission) {
           // Permissions are there

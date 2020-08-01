@@ -19,14 +19,14 @@ export interface ModelType {
     delete?: ModelApiType;
   };
   permissions: {
-    read: [string];
-    create: [string];
-    delete: [string];
-    modifyOwn: [string];
-    write: [string];
-    deleteOwn: [string];
-    archive: [string];
-    archiveOwn: [string];
+    read: string[];
+    create: string[];
+    delete: string[];
+    modifyOwn: string[];
+    write: string[];
+    deleteOwn: string[];
+    archive: string[];
+    archiveOwn: string[];
   };
   _id: any;
 }
@@ -79,7 +79,7 @@ export interface AppBoxData {
 }
 
 export interface SocketInfoType {
-  listeners: [];
+  listeners: any[];
   permissions: [string];
   username: string;
   identified: boolean;
