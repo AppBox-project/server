@@ -284,8 +284,6 @@ export default {
                   // Post process
                   entry.save().then(() => {
                     // We're done. The object was saved.
-                    // Post process: Recalculate formulas
-                    f.formulas.postSave(entry, args.toChange, model, models);
                     // Post process: look for relevant triggers
                     Functions.process.triggerProcessForSingleObject(
                       args.objectId,
@@ -362,8 +360,6 @@ export default {
                 .save()
                 .then((data) => {
                   // We're done. The object was saved.
-                  // Post process: Recalculate formulas
-                  f.formulas.postSave(data, data.data, model, models);
 
                   if (typeof socket === "function") {
                     socket({ success: true });
