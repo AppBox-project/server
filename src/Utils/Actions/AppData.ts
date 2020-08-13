@@ -369,7 +369,6 @@ export default [
               )
                 .save()
                 .then((data) => {
-                  // Todo: postprocess (formulas)
                   socket.emit(`receive-${args.requestId}`, {
                     success: true,
                     data,
@@ -444,7 +443,6 @@ export default [
       if (Functions.appdata.checkAppRoot(models, args.appId)) {
         const model = await models.objects.model.findOne({
           key: args.type,
-          _id: args.id,
         });
 
         map(args.newModel, (value, key) => {
