@@ -26,10 +26,10 @@ app.set("port", config.port);
 let http = require("http").Server(app);
 let io = require("socket.io")(http);
 
-console.log("Mongodb server is online!");
+console.log(`mongodb://${process.env.DBURL || "192.168.0.2:27017"}/AppBox`);
 
 mongoose.connect(
-  `mongodb://${process.env.dbUrl || "192.168.0.2:27017"}/AppBox`,
+  `mongodb://${process.env.DBURL || "192.168.0.2:27017"}/AppBox`,
   {
     useNewUrlParser: true,
     useCreateIndex: true,
