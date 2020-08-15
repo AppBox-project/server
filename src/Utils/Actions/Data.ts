@@ -270,11 +270,17 @@ export default [
     key: "setUserSetting",
     action: async (args, models, socket, socketInfo) => {
       // Find data
-      const setting = await models.usersettings.model.findOne({
+      let setting = await models.usersettings.model.findOne({
         key: args.key,
         username: socketInfo.username,
       });
+      if (!setting) {
+        // If it doesn't exist, create it
+        setting = new models.usersettings.model();
+      }
       setting.value = args.value;
+      setting.username = socketInfo.username;
+      setting.key = args.key;
       setting.markModified("value");
       setting.save();
     },
