@@ -201,7 +201,7 @@ export default [
         objectId: "app",
         "data.id": args.appId,
       });
-      if (appInfo.data.root) {
+      if (appInfo?.data?.root || args.appId === "system") {
         // Root mode
 
         // Skip app permission check
