@@ -284,14 +284,6 @@ export default {
                   // Post process
                   entry.save().then(() => {
                     // We're done. The object was saved.
-                    // Post process: look for relevant triggers
-                    Functions.process.triggerProcessForSingleObject(
-                      args.objectId,
-                      model,
-                      models,
-                      "updated"
-                    );
-
                     socket.emit(`receive-${args.requestId}`, {
                       success: true,
                     });

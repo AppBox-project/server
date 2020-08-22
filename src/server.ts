@@ -94,8 +94,7 @@ db.once("open", async function () {
     initialised = false;
   }
 
-  // Register cron jobs
-  f.process.registerCronjobs(models);
+  // Index
   createIndex(models);
 
   // Exclude react build resources

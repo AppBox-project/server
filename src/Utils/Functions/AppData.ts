@@ -106,13 +106,6 @@ export default {
 
               oldObject.save().then(() => {
                 // We're done. The object was saved.
-                // Post process: look for relevant triggers
-                Functions.process.triggerProcessForSingleObject(
-                  oldObject._id,
-                  model,
-                  models,
-                  "updated"
-                );
                 socket.emit(`receive-${args.requestId}`, {
                   success: true,
                   object: oldObject,
