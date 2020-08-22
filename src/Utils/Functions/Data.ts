@@ -211,6 +211,7 @@ export default {
       let newObject = oldObject;
       map(changes, (value, fieldId) => {
         newObject.data[fieldId] = value;
+        newObject.markModified(`data.${fieldId}`);
       });
 
       const validations = await validateNewObject(models, newObject, oldObject);
@@ -222,7 +223,6 @@ export default {
         });
 
         newObject = transformData(newObject, model, changes);
-        newObject.markModified("data");
         newObject.save();
         resolve();
       } else {
@@ -263,6 +263,7 @@ export default {
             const newObject = entry._doc.data;
             map(args.toChange, (v, k) => {
               newObject[k] = args.toChange[k];
+              entry.markModified(`data.${k}`);
             });
 
             f.data
@@ -279,7 +280,6 @@ export default {
                     model,
                     args.toChange
                   ).data;
-                  entry.markModified("data");
 
                   // Post process
                   entry.save().then(() => {
@@ -347,12 +347,22 @@ export default {
           }
         });
         if (hasCreateAccess) {
+          // Add any default values to the new object's model
+          map(model.fields, (mField, mKey) => {
+            if (mField.default) {
+              args.object[mKey] = mField.default;
+            }
+          });
+
           // Validate & save
           f.data.validateData(model, args, models, false).then(
             () => {
               new models.entries.model(
                 f.data.transformData(
-                  { data: args.object, objectId: args.type },
+                  {
+                    data: args.object,
+                    objectId: args.type,
+                  },
                   model,
                   {}
                 )

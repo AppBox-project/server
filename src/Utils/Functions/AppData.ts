@@ -88,6 +88,9 @@ export default {
         const newObject = oldObject.data;
         map(args.newObject, (v, k) => {
           newObject[k] = v;
+          console.log("a");
+
+          oldObject.markModified(`data.${k}`);
         });
 
         Functions.data
@@ -100,7 +103,6 @@ export default {
           .then(
             () => {
               oldObject.data = newObject;
-              oldObject.markModified("data");
 
               oldObject.save().then(() => {
                 // We're done. The object was saved.
