@@ -21,7 +21,7 @@
     "node-http-ping": "^0.3.1",
     "nodemon": "^2.0.4",
     "socket.io": "^2.3.0",
-    "ts-node": "^8.9.1",
+    "ts-node": "^9.0.0",
     "tsc": "^1.20150623.0",
     "typescript": "^3.9.7"
   },
