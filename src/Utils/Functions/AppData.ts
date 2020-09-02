@@ -92,12 +92,7 @@ export default {
         });
 
         Functions.data
-          .validateData(
-            model,
-            { ...args, object: newObject },
-            models,
-            oldObject
-          )
+          .validateData(model, newObject, args.type, models, oldObject)
           .then(
             () => {
               oldObject.data = newObject;

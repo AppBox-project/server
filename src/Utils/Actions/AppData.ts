@@ -358,30 +358,109 @@ export default [
           });
 
           // Validate the model
-          Functions.data.validateData(model, args, models, false).then(
-            () => {
-              new models.entries.model(
-                Functions.data.transformData(
-                  { data: args.object, objectId: args.type },
-                  model,
-                  {}
+          Functions.data
+            .validateData(model, args.object, args.type, models, false)
+            .then(
+              () => {
+                new models.entries.model(
+                  Functions.data.transformData(
+                    { data: args.object, objectId: args.type },
+                    model,
+                    {}
+                  )
                 )
-              )
-                .save()
-                .then((data) => {
-                  socket.emit(`receive-${args.requestId}`, {
-                    success: true,
-                    data,
+                  .save()
+                  .then((data) => {
+                    socket.emit(`receive-${args.requestId}`, {
+                      success: true,
+                      data,
+                    });
                   });
+              },
+              (feedback) => {
+                socket.emit(`receive-${args.requestId}`, {
+                  success: false,
+                  feedback,
                 });
-            },
-            (feedback) => {
-              socket.emit(`receive-${args.requestId}`, {
-                success: false,
-                feedback,
-              });
-            }
+              }
+            );
+        } else {
+          socket.emit(`receive-${args.requestId}`, {
+            success: false,
+            reason: "no-create-permission-app",
+          });
+        }
+      } else {
+        socket.emit(`receive-${args.requestId}`, {
+          success: false,
+          reason: "no-create-permission-user",
+        });
+      }
+    },
+  },
+  {
+    key: "appInsertsObjects",
+    action: async (args, models, socket, socketInfo: SocketInfoType) => {
+      if (
+        await Functions.appdata.checkUserObjectRights(
+          models,
+          socketInfo.permissions,
+          args.type,
+          ["create"]
+        )
+      ) {
+        if (
+          await Functions.appdata.checkAppObjectRights(
+            models,
+            args.appId,
+            args.type,
+            "create"
+          )
+        ) {
+          const model = await models.objects.model.findOne({ key: args.type });
+          // Loop through all the objects
+          const objectsToSave = [];
+          const promises = [];
+          args.objects.map((obj) =>
+            promises.push(
+              new Promise((resolve, reject) => {
+                let newObject = obj;
+                // Add any default values to the new object's model
+                map(model.fields, (mField, mKey) => {
+                  if (mField.default) {
+                    newObject[mKey] = mField.default;
+                  }
+                });
+
+                // Validate the model
+                Functions.data
+                  .validateData(model, newObject, args.type, models, false)
+                  .then(
+                    () => {
+                      objectsToSave.push(
+                        Functions.data.transformData(
+                          { data: newObject, objectId: args.type },
+                          model,
+                          {}
+                        )
+                      );
+                      resolve();
+                    },
+                    (feedback) => {
+                      socket.emit(`receive-${args.requestId}`, {
+                        success: false,
+                        feedback,
+                      });
+                    }
+                  );
+              })
+            )
           );
+
+          Promise.all(promises).then(() => {
+            // Save all the validated documents
+            models.entries.model.create(objectsToSave);
+          });
         } else {
           socket.emit(`receive-${args.requestId}`, {
             success: false,

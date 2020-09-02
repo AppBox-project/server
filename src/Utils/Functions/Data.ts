@@ -89,7 +89,7 @@ const transformData = (data, model, changed) => {
 export default {
   // validateData()
   // --> Loop through the fields for a model and validate piece by piece
-  validateData: (data, args, models, oldObject) => {
+  validateData: (data, object, type, models, oldObject) => {
     return new Promise((resolve, reject) => {
       const errors = [];
       const fieldChecks = [];
@@ -101,7 +101,7 @@ export default {
               new Promise((subresolve, reject) => {
                 // Check 1
                 if (field.required) {
-                  if (!args.object[k]) {
+                  if (!object[k]) {
                     errors.push({ reason: "missing-required", field: k });
                   }
                 }
@@ -113,8 +113,8 @@ export default {
                   const sk = "data." + k;
                   models.entries.model
                     .findOne({
-                      objectId: args.type,
-                      [sk]: args.object[k],
+                      objectId: type,
+                      [sk]: object[k],
                     })
                     .then((existingObj) => {
                       if (existingObj) {
@@ -136,7 +136,7 @@ export default {
               new Promise((subresolve, reject) => {
                 // Check 3
                 if (field.validations) {
-                  if (args.object[k]) {
+                  if (object[k]) {
                     field.validations.map((validation) => {
                       let rule = validation;
                       let ruleArgs = "";
@@ -152,7 +152,7 @@ export default {
                       switch (rule) {
                         case "isEmail":
                           var re = /\S+@\S+\.\S+/;
-                          if (!re.test(args.object[k])) {
+                          if (!re.test(object[k])) {
                             errors.push({
                               reason: "no-email",
                               field: k,
@@ -162,7 +162,7 @@ export default {
                           break;
 
                         case "hasMinLength":
-                          if (args.object[k].length < ruleArgs) {
+                          if (object[k].length < ruleArgs) {
                             errors.push({
                               reason: "too-short",
                               minLength: ruleArgs,
@@ -267,12 +267,7 @@ export default {
             });
 
             f.data
-              .validateData(
-                model,
-                { ...args, object: newObject },
-                models,
-                entry._doc
-              )
+              .validateData(model, newObject, args.type, models, entry._doc)
               .then(
                 async () => {
                   entry.data = f.data.transformData(
@@ -347,45 +342,47 @@ export default {
           });
 
           // Validate & save
-          f.data.validateData(model, args, models, false).then(
-            () => {
-              new models.entries.model(
-                f.data.transformData(
-                  {
-                    data: args.object,
-                    objectId: args.type,
-                  },
-                  model,
-                  {}
+          f.data
+            .validateData(model, args.object, args.type, models, false)
+            .then(
+              () => {
+                new models.entries.model(
+                  f.data.transformData(
+                    {
+                      data: args.object,
+                      objectId: args.type,
+                    },
+                    model,
+                    {}
+                  )
                 )
-              )
-                .save()
-                .then((data) => {
-                  // We're done. The object was saved.
+                  .save()
+                  .then((data) => {
+                    // We're done. The object was saved.
 
-                  if (typeof socket === "function") {
-                    socket({ success: true });
-                  } else {
-                    socket.emit(`receive-${args.requestId}`, {
-                      success: true,
-                    });
-                  }
-                });
-            },
-            (feedback) => {
-              if (typeof socket === "function") {
-                socket({
-                  success: false,
-                  feedback,
-                });
-              } else {
-                socket.emit(`receive-${args.requestId}`, {
-                  success: false,
-                  feedback,
-                });
+                    if (typeof socket === "function") {
+                      socket({ success: true });
+                    } else {
+                      socket.emit(`receive-${args.requestId}`, {
+                        success: true,
+                      });
+                    }
+                  });
+              },
+              (feedback) => {
+                if (typeof socket === "function") {
+                  socket({
+                    success: false,
+                    feedback,
+                  });
+                } else {
+                  socket.emit(`receive-${args.requestId}`, {
+                    success: false,
+                    feedback,
+                  });
+                }
               }
-            }
-          );
+            );
         } else {
           if (typeof socket === "function") {
             socket({
