@@ -88,8 +88,6 @@ export default {
         const newObject = oldObject.data;
         map(args.newObject, (v, k) => {
           newObject[k] = v;
-          console.log("a");
-
           oldObject.markModified(`data.${k}`);
         });
 
