@@ -459,7 +459,12 @@ export default [
 
           Promise.all(promises).then(() => {
             // Save all the validated documents
-            models.entries.model.create(objectsToSave);
+            models.entries.model.create(objectsToSave).then((data) => {
+              socket.emit(`receive-${args.requestId}`, {
+                success: true,
+                data,
+              });
+            });
           });
         } else {
           socket.emit(`receive-${args.requestId}`, {
