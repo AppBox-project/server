@@ -36,6 +36,7 @@ mongoose.model(
       },
       layouts: {},
       actions: {},
+      extensions: {},
       preview: { picture: String, fields: [String] },
       permissions: {
         read: [String],

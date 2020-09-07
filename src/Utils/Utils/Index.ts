@@ -65,8 +65,8 @@ const updateModelIndex = (change) => {
     const oldModel = modelIndex[oldModelIndex];
 
     if (
-      newModel.indexed !== oldModel.indexed ||
-      newModel.indexed_fields !== oldModel.indexed_fields
+      newModel?.indexed !== oldModel?.indexed ||
+      newModel?.indexed_fields !== oldModel?.indexed_fields
     ) {
       // Only change the index if a field related to index changes.
       // Remove indexed objects for this model

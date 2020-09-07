@@ -18,6 +18,7 @@ export interface ModelType {
     deleteOwn?: ModelApiType;
     delete?: ModelApiType;
   };
+  extensions?: { [key: string]: {} };
   permissions: {
     read: string[];
     create: string[];

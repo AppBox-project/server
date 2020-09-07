@@ -531,9 +531,12 @@ export default [
 
         map(args.newModel, (value, key) => {
           model[key] = value;
+          model.markModified(key);
         });
 
         model.save().then((model) => {
+          console.log("Updated to", model.extensions);
+
           socket.emit(`receive-${args.requestId}`, {
             success: true,
             model,
