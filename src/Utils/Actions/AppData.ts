@@ -535,8 +535,6 @@ export default [
         });
 
         model.save().then((model) => {
-          console.log("Updated to", model.extensions);
-
           socket.emit(`receive-${args.requestId}`, {
             success: true,
             model,

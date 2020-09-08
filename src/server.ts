@@ -224,14 +224,16 @@ db.once("open", async function () {
         });
 
         socket.on("disconnect", () => {
-          socketInfo.listeners.map((listener) => {
-            delete models.objects.listeners[listener];
-            delete models.entries.listeners[listener];
+          if ((socketInfo?.listeners || []).length > 0) {
             console.log(
-              "Session closed, deleted unneccessary listener.",
-              listener
+              `${socketInfo.username} closed their socket. Cleaning up ${socketInfo.listeners.length} listeners.`
             );
-          });
+
+            socketInfo.listeners.map((listener) => {
+              delete models.objects.listeners[listener];
+              delete models.entries.listeners[listener];
+            });
+          }
         });
       }
     });
