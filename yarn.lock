@@ -1289,6 +1289,14 @@ negotiator@0.6.2:
   resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.2.tgz#feacf7ccf525a77ae9634436a64883ffeca346fb"
   integrity sha512-hZXc7K2e+PgeI1eDBe/10Ard4ekbfrrqG8Ep+8Jmf4JID2bNg7NvCPOZN+kfF574pFQI7mum2AUqDidoKqcTOw==
 
+node-2fa@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/node-2fa/-/node-2fa-1.1.2.tgz#5bc5691474afe35ae6b3b76459b98b7c20c7158c"
+  integrity sha1-W8VpFHSv41rms7dkWbmLfCDHFYw=
+  dependencies:
+    notp "^2.0.3"
+    thirty-two "0.0.2"
+
 node-http-ping@^0.3.1:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/node-http-ping/-/node-http-ping-0.3.1.tgz#83b5482a193fe42711be38ac7c05836dfd6c38f0"
@@ -1338,6 +1346,11 @@ normalize-url@^4.1.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/normalize-url/-/normalize-url-4.5.0.tgz#453354087e6ca96957bd8f5baf753f5982142129"
   integrity sha512-2s47yzUxdexf1OhyRi4Em83iQk0aPvwTddtFz4hnSSw9dCEsLEGf6SwIO8ss/19S9iBb5sJaOuTvTGDeZI00BQ==
+
+notp@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/notp/-/notp-2.0.3.tgz#a9fd11e25cfe1ccb39fc6689544ee4c10ef9a577"
+  integrity sha1-qf0R4lz+HMs5/GaJVE7kwQ75pXc=
 
 object-assign@^4:
   version "4.1.1"
@@ -1892,6 +1905,11 @@ term-size@^2.1.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/term-size/-/term-size-2.2.0.tgz#1f16adedfe9bdc18800e1776821734086fcc6753"
   integrity sha512-a6sumDlzyHVJWb8+YofY4TW112G6p2FCPEAFk+59gIYHv3XHRhm9ltVQ9kli4hNWeQBwSpe8cRN25x0ROunMOw==
+
+thirty-two@0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/thirty-two/-/thirty-two-0.0.2.tgz#4253e29d8cb058f0480267c5698c0e4927e54b6a"
+  integrity sha1-QlPinYywWPBIAmfFaYwOSSflS2o=
 
 to-array@0.1.4:
   version "0.1.4"
