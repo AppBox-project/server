@@ -83,5 +83,13 @@ export interface SocketInfoType {
   listeners: any[];
   permissions: [string];
   username: string;
+  user: UserType;
   identified: boolean;
+}
+
+export interface UserType {
+  _id: string;
+  data: {
+    username: string;
+  };
 }

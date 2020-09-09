@@ -64,13 +64,11 @@ export default [
     key: "requestAction",
     action: async (args, models, socket, socketInfo) => {
       const requestArguments = args.args;
+      const context = { args: args.args, models, socket, socketInfo };
 
       switch (args.action) {
         case "setUp2FA":
-          socket.emit(
-            `receive-${args.requestId}`,
-            setUp2FA(requestArguments.appName, requestArguments.name)
-          );
+          socket.emit(`receive-${args.requestId}`, setUp2FA(context));
           break;
         case "compareSecretAndToken":
           compareSecretAndToken(

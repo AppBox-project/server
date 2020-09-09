@@ -1,5 +1,5 @@
 import f from "../Functions";
-import mongoose from "mongoose";
+var twoFactor = require("node-2fa");
 
 // Todo sanitize filter input???
 // --> It may be possible to send something else than arrays which may be a way into the database
@@ -14,10 +14,53 @@ export default [
         .then((user) => {
           if (user) {
             if (f.user.compareHashes(args.user.password, user.data.password)) {
-              socket.emit(`receive-${args.requestId}`, {
-                success: true,
-                token: f.user.getToken(args.user.username, user.data.password),
-              });
+              if (user.data["mfa_enabled"]) {
+                if (args.mfaToken) {
+                  const mfaIsOkay = twoFactor.verifyToken(
+                    user.data["mfa_secret"],
+                    args.mfaToken
+                  );
+                  if (mfaIsOkay) {
+                    if (mfaIsOkay.delta === 0) {
+                      socket.emit(`receive-${args.requestId}`, {
+                        success: true,
+                        token: f.user.getToken(
+                          args.user.username,
+                          user.data.password
+                        ),
+                      });
+                    } else if (mfaIsOkay.delta === -1) {
+                      socket.emit(`receive-${args.requestId}`, {
+                        success: false,
+                        reason: "mfaToken-early",
+                      });
+                    } else {
+                      socket.emit(`receive-${args.requestId}`, {
+                        success: false,
+                        reason: "mfaToken-late",
+                      });
+                    }
+                  } else {
+                    socket.emit(`receive-${args.requestId}`, {
+                      success: false,
+                      reason: "unknown-mfaToken",
+                    });
+                  }
+                } else {
+                  socket.emit(`receive-${args.requestId}`, {
+                    success: false,
+                    reason: "require-mfa",
+                  });
+                }
+              } else {
+                socket.emit(`receive-${args.requestId}`, {
+                  success: true,
+                  token: f.user.getToken(
+                    args.user.username,
+                    user.data.password
+                  ),
+                });
+              }
             } else {
               socket.emit(`receive-${args.requestId}`, {
                 success: false,
@@ -47,6 +90,7 @@ export default [
               });
 
               socketInfo.username = user.data.username;
+              socketInfo.user = user;
               socketInfo.identified = true;
               console.log(`Socket identified as ${user.data.username}.`);
               const newPermissions = ["known"];

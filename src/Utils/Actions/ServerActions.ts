@@ -1,10 +1,24 @@
+import { SocketInfoType } from "../../Utils/Utils/Types";
 var twoFactor = require("node-2fa");
 
-export const setUp2FA = (appName, userName) =>
-  twoFactor.generateSecret({
-    name: appName,
-    account: userName,
-  });
+export const setUp2FA = (context: {
+  args: { [key: string]: any };
+  models;
+  socket;
+  socketInfo: SocketInfoType;
+}) => {
+  if (context.socketInfo.user._id.toString() === context.args.id.toString()) {
+    return {
+      ...twoFactor.generateSecret({
+        name: context.args.appName,
+        account: context.args.userName,
+      }),
+      success: true,
+    };
+  } else {
+    return { success: false, reason: "this-isnt-you" };
+  }
+};
 
 export const compareSecretAndToken = (
   secret,

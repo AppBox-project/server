@@ -198,9 +198,12 @@ db.once("open", async function () {
         listeners: [],
         permissions: ["public"],
         username: undefined,
+        user: undefined,
         identified: false,
       };
-      console.log(`Socket connection from ${socket.conn.remoteAddress}`);
+      console.log(
+        `Socket connection from ${socket.request.connection.remoteAddress}`
+      );
 
       if (!initialised) {
         socket.emit("noInit");

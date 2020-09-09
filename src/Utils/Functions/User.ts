@@ -19,6 +19,13 @@ export default {
     return bcrypt.hashSync(getSecret() + username + password, salt);
   },
   checkUserToken: (user, token) => {
+    console.log(
+      bcrypt.compareSync(
+        getSecret() + user.data.username + user.data.password,
+        token
+      )
+    );
+
     return bcrypt.compareSync(
       getSecret() + user.data.username + user.data.password,
       token
