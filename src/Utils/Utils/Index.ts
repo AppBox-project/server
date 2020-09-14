@@ -58,28 +58,31 @@ const updateModelIndex = (change) => {
   } else {
     // Replace operation performed otherwise.
     const newModel = change.fullDocument;
+    if (newModel) {
+      // In case of deletion, don't call this
 
-    const oldModelIndex = findIndex(modelIndex, (o) => {
-      return o.key === newModel.key;
-    });
-    const oldModel = modelIndex[oldModelIndex];
+      const oldModelIndex = findIndex(modelIndex, (o) => {
+        return o.key === newModel.key;
+      });
+      const oldModel = modelIndex[oldModelIndex];
 
-    if (
-      newModel?.indexed !== oldModel?.indexed ||
-      newModel?.indexed_fields !== oldModel?.indexed_fields
-    ) {
-      // Only change the index if a field related to index changes.
-      // Remove indexed objects for this model
-      searchableIndex = filter(entriesIndex, (o) => o.type !== newModel.key);
-      if (newModel.indexed) {
-        // If they require to be indexed, re-index
-        console.log(`Re-indexing ${newModel.name_plural}`);
+      if (
+        newModel?.indexed !== oldModel?.indexed ||
+        newModel?.indexed_fields !== oldModel?.indexed_fields
+      ) {
+        // Only change the index if a field related to index changes.
+        // Remove indexed objects for this model
+        searchableIndex = filter(entriesIndex, (o) => o.type !== newModel.key);
+        if (newModel.indexed) {
+          // If they require to be indexed, re-index
+          console.log(`Re-indexing ${newModel.name_plural}`);
 
-        updateModelObjectIndex(newModel);
+          updateModelObjectIndex(newModel);
+        }
       }
-    }
 
-    modelIndex[oldModelIndex] = newModel;
+      modelIndex[oldModelIndex] = newModel;
+    }
   }
 };
 
@@ -136,7 +139,7 @@ const updateObjectIndex = async (change, models) => {
     const model = find(modelIndex, (o) => o.key === newObject.objectId);
 
     const io = {
-      primary: newObject.data[model.primary],
+      primary: newObject.data[model?.primary],
       type: model.key,
       id: newObject._id.toString(),
     };
@@ -156,7 +159,7 @@ const updateObjectIndex = async (change, models) => {
     const model = find(modelIndex, (o) => o.key === newObject.objectId);
 
     const io = {
-      primary: newObject.data[model.primary],
+      primary: newObject.data[model?.primary],
       type: model.key,
       id: newObject._id.toString(),
     };

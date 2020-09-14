@@ -38,6 +38,7 @@ mongoose.model(
       actions: {},
       extensions: {},
       preview: { picture: String, fields: [String] },
+      linked: Boolean,
       permissions: {
         read: [String],
         create: [String],

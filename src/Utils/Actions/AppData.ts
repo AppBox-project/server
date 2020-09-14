@@ -1,6 +1,7 @@
 import { remove, map } from "lodash";
 import Functions from "../Functions";
 import { ModelType, SocketInfoType } from "../Utils/Types";
+var uniqid = require("uniqid");
 
 // Todo sanitize filter input???
 // --> It may be possible to send something else than arrays which may be a way into the database
@@ -17,8 +18,87 @@ export default [
       });
 
       if (app.data.root) {
+        const defaultFields = {};
+        const defaultOverviewFields = [];
+        const defaultLayoutFields = [];
+        if (args.newModel.linked) {
+          let linkName = "";
+          args.newModel.linkedModels.map((link) => {
+            linkName += link.label.slice(0, 1);
+            defaultOverviewFields.push(link.value);
+            defaultLayoutFields.push({
+              type: "Field",
+              id: uniqid(),
+              field: link.value,
+            });
+          });
+          defaultFields["name"] = {
+            name: "Name",
+            type: "auto_name",
+            typeArgs: { prefix: linkName, mode: "random" },
+          };
+          args.newModel.primary = "name";
+          args.newModel.icon = "FaLink";
+          args.newModel.linkedModels.map((link) => {
+            defaultFields[link.value] = {
+              name: link.label,
+              type: "relationship",
+              required: true,
+              typeArgs: { relationshipTo: link.value },
+            };
+          });
+        }
         const newModel = new models.objects.model({
           ...args.newModel,
+          actions: {
+            create: {
+              layout: "default",
+              type: "create",
+            },
+          },
+          overviews: {
+            default: {
+              fields: defaultOverviewFields,
+              buttons: ["create"],
+              actions: ["delete"],
+            },
+          },
+          layouts: {
+            default: {
+              layout: [
+                {
+                  type: "AnimationContainer",
+                  xs: 12,
+                  id: "kf2r51ws",
+                  items: [
+                    {
+                      type: "AnimationItem",
+                      xs: 12,
+                      id: "kf2r5375",
+                      items: [
+                        {
+                          type: "Paper",
+                          xs: 12,
+                          id: "kf2r56lv",
+                          title: args.newModel.name,
+                          withBigMargin: true,
+                          key: "default",
+                          items: defaultLayoutFields,
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+              buttons: [],
+            },
+            create: {
+              layout: defaultLayoutFields,
+              buttons: [],
+            },
+          },
+
+          fields: { ...args.newModel.fields, ...defaultFields },
           permissions: {
             read: ["known"],
             create: ["known"],
@@ -26,8 +106,12 @@ export default [
             write: ["known"],
             delete: ["known"],
             deleteOwn: ["known"],
+            archive: ["known"],
+            archiveOwn: ["known"],
           },
         });
+        delete newModel["linkedModels"];
+
         newModel.save().then(() => {
           socket.emit(`receive-${args.requestId}`, { success: true });
         });
