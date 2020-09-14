@@ -35,7 +35,7 @@ export default [
           defaultFields["name"] = {
             name: "Name",
             type: "auto_name",
-            typeArgs: { prefix: linkName, mode: "random" },
+            typeArgs: { prefix: linkName, mode: "increment" },
           };
           args.newModel.primary = "name";
           args.newModel.icon = "FaLink";
@@ -435,9 +435,21 @@ export default [
           const model = await models.objects.model.findOne({ key: args.type });
 
           // Add any default values to the new object's model
-          map(model.fields, (mField, mKey) => {
+          map(model.fields, async (mField, mKey) => {
             if (mField.default) {
               args.object[mKey] = mField.default;
+            }
+            if (mField.type === "auto_name") {
+              args.object[mKey] = `${mField.typeArgs.prefix}-`;
+              console.log(args.object);
+
+              if (mField.typeArgs.mode === "random") {
+                args.object[mKey] += uniqid();
+              } else {
+                args.object[mKey] += await models.entries.model.count({
+                  objectId: args.type,
+                });
+              }
             }
           });
 

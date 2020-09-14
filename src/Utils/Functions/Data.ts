@@ -1,4 +1,4 @@
-import { map } from "lodash";
+import { map, uniqueId } from "lodash";
 import f from "../Functions";
 import Functions from "../Functions";
 
@@ -322,7 +322,7 @@ export default {
     args: { type: string; object; requestId: string },
     socket
   ) => {
-    models.objects.model.findOne({ key: args.type }).then((model) => {
+    models.objects.model.findOne({ key: args.type }).then(async (model) => {
       if (model) {
         let hasCreateAccess = false;
         model.permissions.create.map((permission) => {
@@ -341,7 +341,26 @@ export default {
             }
           });
 
+          // Todo: objectcount is only used when a auto_name field is present.
+          const objectCount: number =
+            (await models.entries.model.countDocuments({
+              objectId: args.type,
+            })) + 1;
+
+          // Add any default values to the new object's model
+          map(model.fields, async (mField, mKey) => {
+            if (mField.default) {
+              args.object[mKey] = mField.default;
+            }
+            if (mField.type === "auto_name") {
+              args.object[mKey] = `${mField.typeArgs.prefix}-${
+                mField.typeArgs.mode === "random" ? uniqueId() : objectCount
+              }`;
+            }
+          });
+
           // Validate & save
+
           f.data
             .validateData(model, args.object, args.type, models, false)
             .then(
