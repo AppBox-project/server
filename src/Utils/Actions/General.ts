@@ -47,6 +47,27 @@ export default [
     },
   },
   {
+    key: "uninstallApp",
+    action: async (args, models, socket, socketInfo) => {
+      // Todo: auth check
+      const newTask = await models.entries.model.create({
+        objectId: "system-task",
+        data: {
+          type: "App uninstall",
+          name: `Uninstall ${args.appId}`,
+          description: `Triggered manually`,
+          when: "asap",
+          action: "app-uninstall",
+          state: "Uninstalling app",
+          done: false,
+          arguments: { appId: args.appId, removeData: args.removeData },
+          progress: 0,
+        },
+      });
+      socket.emit(`receive-${args.requestId}`, newTask._id);
+    },
+  },
+  {
     key: "search",
     action: async (args, models, socket, socketInfo) => {
       const { searchableIndex } = getIndex();
