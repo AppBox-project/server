@@ -5,6 +5,7 @@ import { systemLog } from "./Utils";
  * This file keeps an internal index (in memory) of the models (usable all throughout the server) and objects (usable for search).
  * When the datastream changes the index rebuilds
  */
+// Todo: move this activity to the engine
 let modelIndex = [];
 let searchableIndex = [];
 let entriesIndex = [];
@@ -34,26 +35,27 @@ const updateModelIndex = (change) => {
       return o._id.toString() === change.documentKey._id.toString();
     });
     const oldModel = modelIndex[oldModelIndex];
+    if (oldModel) {
+      map(change.updateDescription.updatedFields, (value, key) => {
+        oldModel[key] = value;
+      });
+      modelIndex[oldModelIndex] = oldModel;
 
-    map(change.updateDescription.updatedFields, (value, key) => {
-      oldModel[key] = value;
-    });
-    modelIndex[oldModelIndex] = oldModel;
-
-    // If index-related fields changed, rebuild index.
-    if (
-      "indexed" in change.updateDescription.updatedFields ||
-      "indexed_fields" in change.updateDescription.updatedFields
-    ) {
-      // Only change the index if a field related to index changes.
-      // Remove indexed objects for this model
-      searchableIndex = filter(entriesIndex, (o) => o.type !== oldModel.key);
-      if (oldModel.indexed) {
-        // If they require to be indexed, re-index
-        systemLog(`Re-indexing ${oldModel.name_plural}`);
-        updateModelObjectIndex(oldModel);
-      } else {
-        systemLog(`${oldModel.name_plural} were removed from the index.`);
+      // If index-related fields changed, rebuild index.
+      if (
+        "indexed" in change.updateDescription.updatedFields ||
+        "indexed_fields" in change.updateDescription.updatedFields
+      ) {
+        // Only change the index if a field related to index changes.
+        // Remove indexed objects for this model
+        searchableIndex = filter(entriesIndex, (o) => o.type !== oldModel.key);
+        if (oldModel.indexed) {
+          // If they require to be indexed, re-index
+          systemLog(`Re-indexing ${oldModel.name_plural}`);
+          updateModelObjectIndex(oldModel);
+        } else {
+          systemLog(`${oldModel.name_plural} were removed from the index.`);
+        }
       }
     }
   } else {
