@@ -1,4 +1,5 @@
 import f from "../Functions";
+import { systemLog } from "../Utils/Utils";
 var twoFactor = require("node-2fa");
 
 // Todo sanitize filter input???
@@ -92,7 +93,7 @@ export default [
               socketInfo.username = user.data.username;
               socketInfo.user = user;
               socketInfo.identified = true;
-              console.log(`Socket identified as ${user.data.username}.`);
+              systemLog(`Socket identified as ${user.data.username}.`);
               const newPermissions = ["known"];
 
               // Find permissions

@@ -1,6 +1,7 @@
 import { map, uniqueId } from "lodash";
 import f from "../Functions";
 import Functions from "../Functions";
+import { systemLog } from "../Utils/Utils";
 
 // This is the rewritten version of validate data
 const validateNewObject = async (models, newObject, oldObject) => {
@@ -72,7 +73,7 @@ const transformData = (data, model, changed) => {
               data.data[k] = f.user.hashString(data.data[k]);
               break;
             default:
-              console.log(
+              systemLog(
                 `Unknown transformation ${transformation} not applied.`
               );
 
@@ -171,9 +172,7 @@ export default {
                           }
                           break;
                         default:
-                          console.log(
-                            `Error! Unknown validation ${validation}.`
-                          );
+                          systemLog(`Error! Unknown validation ${validation}.`);
 
                           break;
                       }

@@ -23,7 +23,7 @@ export default [
         const defaultLayoutFields = [];
         if (args.newModel.linked) {
           let linkName = "";
-defaultOverviewFields.push('name');
+          defaultOverviewFields.push("name");
           args.newModel.linkedModels.map((link) => {
             linkName += link.label.slice(0, 1);
             defaultOverviewFields.push(link.value);
@@ -442,8 +442,6 @@ defaultOverviewFields.push('name');
             }
             if (mField.type === "auto_name") {
               args.object[mKey] = `${mField.typeArgs.prefix}-`;
-              console.log(args.object);
-
               if (mField.typeArgs.mode === "random") {
                 args.object[mKey] += uniqid();
               } else {

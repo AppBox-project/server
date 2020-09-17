@@ -11,6 +11,7 @@ const fs = require("fs");
 import axios from "axios";
 import { initServer } from "./Utils/Actions/General";
 import { createIndex } from "./Utils/Utils/Index";
+import { systemLog } from "./Utils/Utils/Utils";
 
 // Models
 require("./Utils/Models/Objects");
@@ -26,16 +27,17 @@ app.set("port", config.port);
 let http = require("http").Server(app);
 let io = require("socket.io")(http);
 
-console.log(`mongodb://${process.env.DBURL || "192.168.0.2:27017"}/AppBox`);
-
-mongoose.connect(
-  `mongodb://${process.env.DBURL || "192.168.0.2:27017"}/AppBox`,
-  {
-    useNewUrlParser: true,
-    useCreateIndex: true,
-    useUnifiedTopology: true,
-  }
+systemLog(
+  `Trying to connect to the database at ${
+    process.env.DBURL || "localhost:27017"
+  }`
 );
+
+mongoose.connect(`mongodb://${process.env.DBURL || "localhost:27017"}/AppBox`, {
+  useNewUrlParser: true,
+  useCreateIndex: true,
+  useUnifiedTopology: true,
+});
 var db = mongoose.connection;
 db.on("error", console.error.bind(console, "Connection error:"));
 db.once("open", async function () {
@@ -85,12 +87,12 @@ db.once("open", async function () {
     });
   });
 
-  console.log("Connected to database and loaded models.");
+  systemLog("Connected to database and loaded models.");
 
   const initialModels = await models.objects.model.find();
   let initialised = true;
   if (initialModels.length < 1) {
-    console.log("Database is still empty, client should show onboarding");
+    systemLog("Database is still empty, client should show onboarding");
     initialised = false;
   }
 
@@ -190,7 +192,7 @@ db.once("open", async function () {
   app.use("/*", express.static("../Client/build"));
 
   http.listen(config.port, () => {
-    console.log(`Server open on http://localhost:${config.port}`);
+    systemLog(`Server now available at http://localhost:${config.port}`);
 
     // Client interaction
     io.on("connection", (socket: any) => {
@@ -201,8 +203,8 @@ db.once("open", async function () {
         user: undefined,
         identified: false,
       };
-      console.log(
-        `Socket connection from ${socket.request.connection.remoteAddress}`
+      systemLog(
+        `New socket connection from ${socket.request.connection.remoteAddress}`
       );
 
       if (!initialised) {
@@ -228,7 +230,7 @@ db.once("open", async function () {
 
         socket.on("disconnect", () => {
           if ((socketInfo?.listeners || []).length > 0) {
-            console.log(
+            systemLog(
               `${socketInfo.username} closed their socket. Cleaning up ${socketInfo.listeners.length} listeners.`
             );
 

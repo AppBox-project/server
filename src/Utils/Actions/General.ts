@@ -1,5 +1,6 @@
 import f from "../Functions";
 import { getIndex } from "../Utils/Index";
+import { systemLog } from "../Utils/Utils";
 import { setUp2FA, compareSecretAndToken } from "./ServerActions";
 const fuzzysort = require("fuzzysort");
 
@@ -83,7 +84,7 @@ export default [
           ).then((response) => socket.emit(response));
           break;
         default:
-          console.log("Unknown action");
+          systemLog("Unknown action");
           break;
       }
     },
@@ -93,9 +94,9 @@ export default [
 export const initServer = async (args, models, socket, socketInfo) => {
   const defaultModels = require("/AppBox/System/Server/src/Utils/DefaultData/models.json");
   await models.objects.model.insertMany(defaultModels);
-  console.log("Success: inserted default models");
+  systemLog("Success: inserted default models");
   args.user.password = f.user.hashString(args.user.password);
   await models.entries.model.create({ objectId: "user", data: args.user });
-  console.log("Success: created default user");
+  systemLog("Success: created default user");
   socket.send(`receive-${args.requestId}`, { success: true });
 };
