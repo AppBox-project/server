@@ -34,11 +34,10 @@
   "author": "Vic van Cooten",
   "license": "MIT",
   "scripts": {
-    "startLocal": "set \"DBURL=localhost:27017\" && yarn start",
     "build": "tsc",
     "watch-ts": "tsc -w",
     "watch-node": "nodemon dist/server.js",
-    "start": "concurrently -k -p \"[{name}]\" -n \"TypeScript, Node\" -c \"yello.bold, cyan.bold\"  \"yarn run watch-ts\" \"yarn run watch-node\"",
+    "develop": "concurrently -k -p \"[{name}]\" -n \"TypeScript, Node\" -c \"yello.bold, cyan.bold\"  \"yarn run watch-ts\" \"yarn run watch-node\"",
     "test": "mocha -r ts-node/register src/**/*.spec.ts"
   }
 }
