@@ -113,11 +113,5 @@ export default [
 ];
 
 export const initServer = async (args, models, socket, socketInfo) => {
-  const defaultModels = require("/AppBox/System/Server/src/Utils/DefaultData/models.json");
-  await models.objects.model.insertMany(defaultModels);
-  systemLog("Success: inserted default models");
-  args.user.password = f.user.hashString(args.user.password);
-  await models.entries.model.create({ objectId: "user", data: args.user });
-  systemLog("Success: created default user");
-  socket.send(`receive-${args.requestId}`, { success: true });
+  console.log(args);
 };

@@ -152,7 +152,7 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
 
         // Authorize user
         models.entries.model
-          .findOne({ objectId: "user", "data.username": username })
+          .findOne({ objectId: "users", "data.username": username })
           .then((user) => {
             if (user) {
               if (f.user.checkUserToken(user, token)) {

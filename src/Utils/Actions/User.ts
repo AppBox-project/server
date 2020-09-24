@@ -11,7 +11,7 @@ export default [
     key: "requestToken",
     action: (args, models, socket, socketInfo) => {
       models.entries.model
-        .findOne({ objectId: "user", "data.username": args.user.username })
+        .findOne({ objectId: "users", "data.username": args.user.username })
         .then((user) => {
           if (user) {
             if (f.user.compareHashes(args.user.password, user.data.password)) {
@@ -82,7 +82,7 @@ export default [
     key: "signIn",
     action: (args, models, socket, socketInfo) => {
       models.entries.model
-        .findOne({ objectId: "user", "data.username": args.username })
+        .findOne({ objectId: "users", "data.username": args.username })
         .then(async (user) => {
           if (user) {
             if (f.user.checkUserToken(user, args.token)) {
