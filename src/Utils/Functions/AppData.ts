@@ -44,7 +44,7 @@ export default {
   },
   checkAppRoot: async (models, appId: string) => {
     const app = await models.entries.model.findOne({
-      objectId: "app",
+      objectId: "apps",
       "data.id": appId,
     });
     return app.root;

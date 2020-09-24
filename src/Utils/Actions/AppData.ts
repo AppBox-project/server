@@ -13,7 +13,7 @@ export default [
     key: "appCreatesModel",
     action: async (args, models, socket, socketInfo: SocketInfoType) => {
       const app = await models.entries.model.findOne({
-        objectId: "app",
+        objectId: "apps",
         "data.id": args.appId,
       });
 
@@ -178,7 +178,7 @@ export default [
     action: async (args, models, socket, socketInfo: SocketInfoType) => {
       // First map permissions for the app
       const appInfo = await models.entries.model.findOne({
-        objectId: "app",
+        objectId: "apps",
         "data.id": args.appId,
       });
       if (appInfo.data.root) {
@@ -283,7 +283,7 @@ export default [
     action: async (args, models, socket, socketInfo: SocketInfoType) => {
       // First map permissions for the app
       const appInfo = await models.entries.model.findOne({
-        objectId: "app",
+        objectId: "apps",
         "data.id": args.appId,
       });
       if (appInfo?.data?.root || args.appId === "system") {
