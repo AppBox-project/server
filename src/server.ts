@@ -49,7 +49,7 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
       const models = {
         models: {
           model: mongoose.model("Models"),
-          stream: db.collection("Models").watch(),
+          stream: db.collection("models").watch(),
           listeners: {},
         },
         archive: {
@@ -58,7 +58,7 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
         },
         objects: {
           model: mongoose.model("Objects"),
-          stream: db.collection("Objects").watch(),
+          stream: db.collection("objects").watch(),
           listeners: {},
         },
         apppermissions: {
