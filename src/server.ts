@@ -14,9 +14,9 @@ import { systemLog } from "./Utils/Utils/Utils";
 import Axios from "axios";
 
 // Models
-require("./Utils/Models/Objects");
+require("./Utils/Models/Models");
 require("./Utils/Models/Archive");
-require("./Utils/Models/Entries");
+require("./Utils/Models/Objects");
 require("./Utils/Models/AppPermissions");
 require("./Utils/Models/UserSettings");
 
@@ -47,18 +47,18 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
     db.once("open", async function () {
       // Models
       const models = {
-        objects: {
-          model: mongoose.model("Objects"),
-          stream: db.collection("objects").watch(),
+        models: {
+          model: mongoose.model("Models"),
+          stream: db.collection("Models").watch(),
           listeners: {},
         },
         archive: {
           model: mongoose.model("Archive"),
           listeners: {},
         },
-        entries: {
-          model: mongoose.model("Entries"),
-          stream: db.collection("entries").watch(),
+        objects: {
+          model: mongoose.model("Objects"),
+          stream: db.collection("Objects").watch(),
           listeners: {},
         },
         apppermissions: {
@@ -72,14 +72,14 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
       };
 
       // Change streams
-      models.objects.stream.on("change", (change) => {
-        map(models.objects.listeners, (listener) => {
+      models.models.stream.on("change", (change) => {
+        map(models.models.listeners, (listener) => {
           //@ts-ignore
           listener(change);
         });
       });
-      models.entries.stream.on("change", (change) => {
-        map(models.entries.listeners, (listener, key) => {
+      models.objects.stream.on("change", (change) => {
+        map(models.objects.listeners, (listener, key) => {
           //@ts-ignore
           listener(change);
         });
@@ -93,7 +93,7 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
 
       systemLog("Connected to database and loaded models.");
 
-      const initialModels = await models.objects.model.find();
+      const initialModels = await models.models.model.find();
       let initialised = true;
       if (initialModels.length < 1) {
         systemLog("Database is still empty, client should show onboarding");
@@ -151,7 +151,7 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
         const file = req.files.file;
 
         // Authorize user
-        models.entries.model
+        models.objects.model
           .findOne({ objectId: "users", "data.username": username })
           .then((user) => {
             if (user) {
@@ -239,8 +239,8 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
                 );
 
                 socketInfo.listeners.map((listener) => {
+                  delete models.models.listeners[listener];
                   delete models.objects.listeners[listener];
-                  delete models.entries.listeners[listener];
                 });
               }
             });

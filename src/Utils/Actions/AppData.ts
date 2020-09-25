@@ -12,7 +12,7 @@ export default [
   {
     key: "appCreatesModel",
     action: async (args, models, socket, socketInfo: SocketInfoType) => {
-      const app = await models.entries.model.findOne({
+      const app = await models.objects.model.findOne({
         objectId: "apps",
         "data.id": args.appId,
       });
@@ -49,7 +49,7 @@ export default [
             };
           });
         }
-        const newModel = new models.objects.model({
+        const newModel = new models.models.model({
           ...args.newModel,
           actions: {
             create: {
@@ -138,7 +138,7 @@ export default [
         if ((permissions?.permissions || []).includes("read")) {
           // Check succesful
           // Send data
-          const model = await models.objects.model.findOne({
+          const model = await models.models.model.findOne({
             key: args.modelId,
           });
           socket.emit(`receive-${args.requestId}`, {
@@ -153,7 +153,7 @@ export default [
         }
       };
 
-      models.objects.listeners[args.requestId] = (change) => {
+      models.models.listeners[args.requestId] = (change) => {
         returnData();
       };
       socketInfo.listeners.push(args.requestId);
@@ -164,7 +164,7 @@ export default [
     // --> Cleans up listeners for object
     key: "appUnlistensForModel",
     action: (args, models, socket, socketInfo: SocketInfoType) => {
-      delete models.objects.listeners[args.requestId];
+      delete models.models.listeners[args.requestId];
       remove(socketInfo.listeners, (o) => {
         return o === args.requestId;
       });
@@ -177,7 +177,7 @@ export default [
     key: "appListensForObjectTypes",
     action: async (args, models, socket, socketInfo: SocketInfoType) => {
       // First map permissions for the app
-      const appInfo = await models.entries.model.findOne({
+      const appInfo = await models.objects.model.findOne({
         objectId: "apps",
         "data.id": args.appId,
       });
@@ -185,7 +185,7 @@ export default [
         const returnData = async () => {
           // --> Root mode
           // Find all objects
-          const types = await models.objects.model.find({ ...args.filter });
+          const types = await models.models.model.find({ ...args.filter });
           const response = [];
 
           // Do check user permissions though
@@ -214,7 +214,7 @@ export default [
           }
         };
 
-        models.objects.listeners[args.requestId] = (change) => {
+        models.models.listeners[args.requestId] = (change) => {
           returnData();
         };
         socketInfo.listeners.push(args.requestId);
@@ -232,7 +232,7 @@ export default [
               if (appPermission.permissions.includes("read")) {
                 promises.push(
                   new Promise((resolve, reject) => {
-                    models.objects.model
+                    models.models.model
                       .findOne({ appId: args.appId, ...args.filter })
                       .then((type) => {
                         type.permissions.read.map((permission) => {
@@ -270,7 +270,7 @@ export default [
     // --> Cleans up listeners for object
     key: "appUnlistensForObjectTypes",
     action: (args, models, socket, socketInfo: SocketInfoType) => {
-      delete models.objects.listeners[args.requestId];
+      delete models.models.listeners[args.requestId];
       remove(socketInfo.listeners, (o) => {
         return o === args.requestId;
       });
@@ -282,7 +282,7 @@ export default [
     key: "appListensForObjects",
     action: async (args, models, socket, socketInfo: SocketInfoType) => {
       // First map permissions for the app
-      const appInfo = await models.entries.model.findOne({
+      const appInfo = await models.objects.model.findOne({
         objectId: "apps",
         "data.id": args.appId,
       });
@@ -290,7 +290,7 @@ export default [
         // Root mode
 
         // Skip app permission check
-        models.objects.model.findOne({ key: args.type }).then((objectType) => {
+        models.models.model.findOne({ key: args.type }).then((objectType) => {
           if (objectType) {
             let userPermission = false;
             objectType.permissions.read.map((p) => {
@@ -302,7 +302,7 @@ export default [
               // App & user permissions -> Find the actual data
               // Find data
               const returnData = () => {
-                models.entries.model
+                models.objects.model
                   .find({ objectId: args.type, ...args.filter })
                   .then((objects) => {
                     socket.emit(`receive-${args.requestId}`, {
@@ -312,7 +312,7 @@ export default [
                   });
               };
 
-              models.entries.listeners[args.requestId] = (change) => {
+              models.objects.listeners[args.requestId] = (change) => {
                 returnData();
               };
               socketInfo.listeners.push(args.requestId);
@@ -342,7 +342,7 @@ export default [
               if (permission.permissions.includes("read")) {
                 // App permissions are there
                 // Check user permissions
-                models.objects.model
+                models.models.model
                   .findOne({ key: args.type })
                   .then((objectType) => {
                     if (objectType) {
@@ -356,7 +356,7 @@ export default [
                         // App & user permissions -> Find the actual data
                         // Find data
                         const returnData = () => {
-                          models.entries.model
+                          models.objects.model
                             .find({ objectId: args.type, ...args.filter })
                             .then((objects) => {
                               socket.emit(`receive-${args.requestId}`, {
@@ -366,7 +366,7 @@ export default [
                             });
                         };
 
-                        models.entries.listeners[args.requestId] = (change) => {
+                        models.objects.listeners[args.requestId] = (change) => {
                           returnData();
                         };
                         socketInfo.listeners.push(args.requestId);
@@ -407,7 +407,7 @@ export default [
     key: "appUnlistensForObjects",
     action: (args, models, socket, socketInfo: SocketInfoType) => {
       //console.log(`Cleaning up data request ${args.requestId}`);
-      delete models.entries.listeners[args.requestId];
+      delete models.objects.listeners[args.requestId];
       remove(socketInfo.listeners, (o) => {
         return o === args.requestId;
       });
@@ -433,7 +433,7 @@ export default [
           )
         ) {
           // We have permission. Create object
-          const model = await models.objects.model.findOne({ key: args.type });
+          const model = await models.models.model.findOne({ key: args.type });
 
           // Add any default values to the new object's model
           map(model.fields, async (mField, mKey) => {
@@ -445,7 +445,7 @@ export default [
               if (mField.typeArgs.mode === "random") {
                 args.object[mKey] += uniqid();
               } else {
-                args.object[mKey] += await models.entries.model.count({
+                args.object[mKey] += await models.objects.model.count({
                   objectId: args.type,
                 });
               }
@@ -457,7 +457,7 @@ export default [
             .validateData(model, args.object, args.type, models, false)
             .then(
               () => {
-                new models.entries.model(
+                new models.objects.model(
                   Functions.data.transformData(
                     { data: args.object, objectId: args.type },
                     model,
@@ -512,7 +512,7 @@ export default [
             "create"
           )
         ) {
-          const model = await models.objects.model.findOne({ key: args.type });
+          const model = await models.models.model.findOne({ key: args.type });
           // Loop through all the objects
           const objectsToSave = [];
           const promises = [];
@@ -554,7 +554,7 @@ export default [
 
           Promise.all(promises).then(() => {
             // Save all the validated documents
-            models.entries.model.create(objectsToSave).then((data) => {
+            models.objects.model.create(objectsToSave).then((data) => {
               socket.emit(`receive-${args.requestId}`, {
                 success: true,
                 data,
@@ -595,7 +595,7 @@ export default [
           )
         ) {
           // Todo: sanatize input
-          models.entries.model
+          models.objects.model
             .deleteMany({ objectId: args.type, ...args.filter })
             .then(() => {
               socket.emit(`receive-${args.requestId}`, {
@@ -620,7 +620,7 @@ export default [
     key: "appUpdatesModel",
     action: async (args, models, socket, socketInfo) => {
       if (Functions.appdata.checkAppRoot(models, args.appId)) {
-        const model = await models.objects.model.findOne({
+        const model = await models.models.model.findOne({
           key: args.type,
         });
 
@@ -661,7 +661,7 @@ export default [
       });
 
       if ((permission?.permissions || []).includes("archive")) {
-        const model: ModelType = await models.objects.model.findOne({
+        const model: ModelType = await models.models.model.findOne({
           key: args.modelId,
         });
         let hasArchivePermission = false;
@@ -676,7 +676,7 @@ export default [
 
         if (hasArchivePermission) {
           // Permissions are there
-          const object = await models.entries.model.findOne({
+          const object = await models.objects.model.findOne({
             _id: args.objectId,
           });
 

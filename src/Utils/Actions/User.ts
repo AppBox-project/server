@@ -10,7 +10,7 @@ export default [
     // --> Request token
     key: "requestToken",
     action: (args, models, socket, socketInfo) => {
-      models.entries.model
+      models.objects.model
         .findOne({ objectId: "users", "data.username": args.user.username })
         .then((user) => {
           if (user) {
@@ -81,7 +81,7 @@ export default [
   {
     key: "signIn",
     action: (args, models, socket, socketInfo) => {
-      models.entries.model
+      models.objects.model
         .findOne({ objectId: "users", "data.username": args.username })
         .then(async (user) => {
           if (user) {
@@ -98,14 +98,14 @@ export default [
 
               // Find permissions
               // Todo improve
-              const roles = await models.entries.model.find({
+              const roles = await models.objects.model.find({
                 _id: { $in: user.data.roles },
               });
 
               await roles.reduce(async (previousPromise, role) => {
                 let newData = await previousPromise;
 
-                const permissions = await models.entries.model.find({
+                const permissions = await models.objects.model.find({
                   _id: { $in: role.data.permissions },
                 });
                 permissions.map((permission) => {

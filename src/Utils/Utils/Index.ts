@@ -12,16 +12,16 @@ let entriesIndex = [];
 
 // Create index on server start
 export const createIndex = async (models) => {
-  modelIndex = await models.objects.model.find();
-  entriesIndex = await models.entries.model.find();
+  modelIndex = await models.models.model.find();
+  entriesIndex = await models.objects.model.find();
   // Loop through models and create a relevant index
   modelIndex.map((model) => {
     updateModelObjectIndex(model);
   });
-  models.objects.stream.on("change", (change) => {
+  models.models.stream.on("change", (change) => {
     updateModelIndex(change);
   });
-  models.entries.stream.on("change", (change) => {
+  models.objects.stream.on("change", (change) => {
     updateObjectIndex(change, models);
   });
 };
@@ -108,7 +108,7 @@ const updateObjectIndex = async (change, models) => {
     systemLog(
       `Object changed. Re-indexing: ${change.documentKey._id.toString()}`
     );
-    let newObject = await models.entries.model.find({
+    let newObject = await models.objects.model.find({
       _id: change.documentKey._id,
     });
     newObject = newObject[0];

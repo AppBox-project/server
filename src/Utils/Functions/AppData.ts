@@ -8,7 +8,7 @@ export default {
     object,
     permissionTypes: string[] // "read" | "create" | "modifyOwn" | "write" | "delete" | "deleteOwn"
   ) => {
-    const type = await models.objects.model.findOne({ key: object });
+    const type = await models.models.model.findOne({ key: object });
 
     let hasPermission = false;
     permissionTypes.map((permissionType) => {
@@ -43,7 +43,7 @@ export default {
     }
   },
   checkAppRoot: async (models, appId: string) => {
-    const app = await models.entries.model.findOne({
+    const app = await models.objects.model.findOne({
       objectId: "apps",
       "data.id": appId,
     });
@@ -79,8 +79,8 @@ export default {
         )
       ) {
         // We have permission. Create object
-        const model = await models.objects.model.findOne({ key: args.type });
-        const oldObject = await models.entries.model.findOne({
+        const model = await models.models.model.findOne({ key: args.type });
+        const oldObject = await models.objects.model.findOne({
           _id: args.id,
         });
 

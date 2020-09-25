@@ -40,7 +40,7 @@ export const compareSecretAndToken = (
       resolve("too-early");
     } else {
       // TODO: needs to be heavily authorized. Otherwise you can just modify other peoples secrets.
-      const object = await models.entries.model.findOne({ _id: objectId });
+      const object = await models.objects.model.findOne({ _id: objectId });
       object.data[enabled_field] = true;
       object.markModified(`data.${enabled_field}`);
       object.data[secret_field] = secret;

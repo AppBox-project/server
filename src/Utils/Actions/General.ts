@@ -19,7 +19,7 @@ export default [
         arguments: undefined,
       };
 
-      await models.entries.model.create({
+      await models.objects.model.create({
         objectId: "system-task",
         data: newTask,
       });
@@ -29,7 +29,7 @@ export default [
     key: "installApp",
     action: async (args, models, socket, socketInfo) => {
       // Todo: auth check
-      const newTask = await models.entries.model.create({
+      const newTask = await models.objects.model.create({
         objectId: "system-task",
         data: {
           type: "App install",
@@ -50,7 +50,7 @@ export default [
     key: "uninstallApp",
     action: async (args, models, socket, socketInfo) => {
       // Todo: auth check
-      const newTask = await models.entries.model.create({
+      const newTask = await models.objects.model.create({
         objectId: "system-task",
         data: {
           type: "App uninstall",

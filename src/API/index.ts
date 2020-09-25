@@ -3,7 +3,7 @@ import { baseUrl } from "../Utils/Utils/Utils";
 
 // The read API allows you to read and search files
 const executeReadApi = async (models, objectId, req, res, next) => {
-  const model = await models.objects.model.findOne({ key: objectId });
+  const model = await models.models.model.findOne({ key: objectId });
   if (!model) {
     res.send("No-such-object");
   } else {
@@ -39,13 +39,13 @@ const executeReadApi = async (models, objectId, req, res, next) => {
               requirements[`data.${key}`] = value;
             }
           });
-          objects = await models.entries.model.find({
+          objects = await models.objects.model.find({
             objectId,
             ...requirements,
           });
         } else {
           // No query params
-          objects = await models.entries.model.find({ objectId });
+          objects = await models.objects.model.find({ objectId });
         }
         // Modifiers to apply to data
         // Todo: improve logic

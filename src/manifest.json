@@ -1,5 +1,589 @@
 {
   "version": "0.0.1",
-  "required": { "models": {} },
+  "required": {
+    "models": {
+      "users": {
+        "indexed": true,
+        "indexed_fields": "full_name",
+        "permissions": {
+          "read": ["known"],
+          "create": ["admin"],
+          "modifyOwn": ["known"],
+          "write": ["known"],
+          "delete": ["admin"],
+          "deleteOwn": ["known"],
+          "archive": ["admin"],
+          "archiveOwn": ["known"]
+        },
+        "key": "users",
+        "name": "User",
+        "primary": "username",
+        "name_plural": "Users",
+        "fields": {
+          "username": {
+            "name": "Username",
+            "required": true,
+            "unique": true,
+            "type": "input"
+          },
+          "password": {
+            "name": "Password",
+            "required": true,
+            "type": "input",
+            "typeArgs": {
+              "type": "password"
+            },
+            "transformations": ["hash"]
+          },
+          "email": {
+            "name": "Email",
+            "type": "input",
+            "typeArgs": {
+              "type": "email"
+            },
+            "required": true,
+            "unique": true,
+            "validations": ["isEmail"]
+          },
+          "first_name": {
+            "name": "First name",
+            "type": "formula",
+            "typeArgs": {
+              "formula": "{{ person_r.first_name }}",
+              "type": "text"
+            }
+          },
+          "last_name": {
+            "name": "Last name",
+            "type": "formula",
+            "typeArgs": {
+              "formula": "{{ person_r.last_name }}",
+              "type": "text"
+            }
+          },
+          "full_name": {
+            "name": "Full name",
+            "type": "formula",
+            "typeArgs": {
+              "formula": "{{ first_name }} {{ last_name }}",
+              "type": "text"
+            }
+          },
+          "picture": {
+            "name": "Picture",
+            "type": "formula",
+            "typeArgs": {
+              "formula": "{{ person_r.picture }}",
+              "type": "picture"
+            }
+          },
+          "roles": {
+            "name": "Roles",
+            "type": "relationship_m",
+            "typeArgs": {
+              "relationshipTo": "roles"
+            }
+          },
+          "person": {
+            "name": "Person",
+            "type": "relationship",
+            "typeArgs": {
+              "relationshipTo": "people"
+            },
+            "required": true,
+            "unique": true
+          },
+          "mfa_enabled": {
+            "name": "MFA enabled",
+            "type": "boolean",
+            "readonly": true,
+            "typeArgs": {
+              "readonly": true
+            }
+          },
+          "mfa_secret": {
+            "name": "MFA secret",
+            "type": "input",
+            "readonly": true,
+            "typeArgs": {
+              "readonly": true
+            },
+            "conditions": {
+              "conditions": [
+                {
+                  "field": "mfa_enabled",
+                  "operator": "equals",
+                  "value": true
+                }
+              ]
+            }
+          },
+          "mfa_qr": {
+            "name": "MFA QR",
+            "type": "qr",
+            "readonly": true,
+            "typeArgs": {
+              "readonly": true,
+              "type": "text"
+            },
+            "conditions": {
+              "conditions": [
+                {
+                  "field": "mfa_enabled",
+                  "operator": "equals",
+                  "value": true
+                }
+              ]
+            }
+          }
+        },
+        "actions": {
+          "create": {
+            "layout": "create",
+            "type": "create"
+          }
+        },
+        "overviews": {
+          "default": {
+            "fields": ["username", "full_name", "email", "roles"],
+            "buttons": ["create"],
+            "actions": ["delete"]
+          }
+        },
+        "layouts": {
+          "create": {
+            "layout": [
+              {
+                "type": "Field",
+                "id": "ka8gkjo5",
+                "field": "username"
+              },
+              {
+                "type": "Field",
+                "id": "ka8gonck",
+                "field": "password"
+              },
+              {
+                "type": "Field",
+                "id": "ka8god8m",
+                "field": "email"
+              },
+              {
+                "type": "Field",
+                "id": "ka8gortq",
+                "field": "first_name"
+              },
+              {
+                "type": "Field",
+                "id": "ka8gosjn",
+                "field": "last_name"
+              },
+              {
+                "type": "Field",
+                "id": "kajp4b1p",
+                "field": "roles"
+              },
+              {
+                "type": "Field",
+                "id": "kcrrf1a8",
+                "field": "person"
+              }
+            ]
+          },
+          "default": {
+            "layout": [
+              {
+                "type": "AnimationContainer",
+                "id": "ka9m7kuo",
+                "items": [
+                  {
+                    "type": "GridContainer",
+                    "id": "ka9m7ont",
+                    "items": [
+                      {
+                        "type": "GridItem",
+                        "xs": 12,
+                        "id": "ka9m7ziv",
+                        "md": 9,
+                        "items": [
+                          {
+                            "type": "AnimationItem",
+                            "id": "ka9m8hmc",
+                            "items": [
+                              {
+                                "type": "Paper",
+                                "id": "ka9m8q1g",
+                                "items": [
+                                  {
+                                    "type": "Field",
+                                    "id": "ka9m8x6j",
+                                    "field": "username"
+                                  },
+                                  {
+                                    "type": "Field",
+                                    "id": "ka9m9490",
+                                    "field": "email"
+                                  },
+                                  {
+                                    "type": "Field",
+                                    "id": "ka9m978n",
+                                    "field": "password"
+                                  },
+                                  {
+                                    "type": "GridContainer",
+                                    "id": "ked1tmrq",
+                                    "items": [
+                                      {
+                                        "type": "GridItem",
+                                        "xs": 6,
+                                        "id": "ked1tq6r",
+                                        "items": [
+                                          {
+                                            "type": "Field",
+                                            "id": "ka9m9oes",
+                                            "field": "first_name"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "type": "GridItem",
+                                        "xs": 6,
+                                        "id": "ked1trqd",
+                                        "items": [
+                                          {
+                                            "type": "Field",
+                                            "id": "ka9m9qsg",
+                                            "field": "last_name"
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ],
+                                "title": "About user",
+                                "withMargin": false,
+                                "withSmallMargin": false,
+                                "sideMargin": true,
+                                "oneSideMargin": true,
+                                "hoverable": false,
+                                "withBigMargin": true,
+                                "sideMarginOnly": false
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "GridItem",
+                        "xs": 12,
+                        "id": "ka9m8290",
+                        "md": 3,
+                        "items": [
+                          {
+                            "type": "AnimationItem",
+                            "id": "ka9m8kqi",
+                            "items": [
+                              {
+                                "type": "Paper",
+                                "id": "ka9m8to1",
+                                "items": [
+                                  {
+                                    "type": "Field",
+                                    "id": "ka9m9zre",
+                                    "field": "person"
+                                  }
+                                ],
+                                "title": "Info",
+                                "withMargin": false,
+                                "withSmallMargin": false,
+                                "sideMargin": true,
+                                "oneSideMargin": true,
+                                "hoverable": false,
+                                "withBigMargin": true,
+                                "sideMarginOnly": false
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "GridItem",
+                        "xs": 12,
+                        "id": "kcnon8zp",
+                        "items": [
+                          {
+                            "type": "AnimationItem",
+                            "id": "kcnoncuz",
+                            "items": [
+                              {
+                                "type": "Paper",
+                                "id": "kcnong21",
+                                "title": "Permissions",
+                                "items": [
+                                  {
+                                    "type": "Field",
+                                    "id": "kcnonrxp",
+                                    "field": "roles",
+                                    "title": "Permissions"
+                                  }
+                                ],
+                                "withMargin": false,
+                                "withSmallMargin": false,
+                                "sideMargin": true,
+                                "oneSideMargin": true,
+                                "hoverable": false,
+                                "withBigMargin": true,
+                                "sideMarginOnly": false
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "buttons": ["clone", "archive"],
+            "factsBar": ["picture", "full_name", "username", "email"]
+          },
+          "system": {
+            "layout": [
+              {
+                "type": "TabContainer",
+                "id": "kf1htq1w",
+                "identifier": "page",
+                "field": "username",
+                "hideView": false,
+                "items": [
+                  {
+                    "type": "TabItem",
+                    "id": "kf1htw1d",
+                    "title": "Information",
+                    "identifier": "info",
+                    "field": "username",
+                    "hideView": false,
+                    "items": [
+                      {
+                        "type": "AnimationContainer",
+                        "id": "kf1hugpt",
+                        "items": [
+                          {
+                            "type": "GridContainer",
+                            "id": "kf1huq75",
+                            "items": [
+                              {
+                                "type": "GridItem",
+                                "xs": 12,
+                                "id": "kf1huyo9",
+                                "items": [
+                                  {
+                                    "type": "AnimationItem",
+                                    "id": "kf1hvgfx",
+                                    "items": [
+                                      {
+                                        "type": "FactsBar",
+                                        "id": "kf1hvkf1"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "GridItem",
+                                "xs": 12,
+                                "id": "kf1hw44g",
+                                "md": 9,
+                                "field": "username",
+                                "hideView": false,
+                                "items": [
+                                  {
+                                    "type": "AnimationItem",
+                                    "id": "kf1hwdgk",
+                                    "items": [
+                                      {
+                                        "type": "Paper",
+                                        "id": "kf1hwfi0",
+                                        "title": "Information",
+                                        "withBigMargin": true,
+                                        "hideView": false,
+                                        "items": [
+                                          {
+                                            "type": "Field",
+                                            "xs": 12,
+                                            "id": "kf1hzo8i",
+                                            "field": "username",
+                                            "hideView": false,
+                                            "noLabel": false,
+                                            "md": 3,
+                                            "identifier": "settings",
+                                            "title": "Settings",
+                                            "withBigMargin": true
+                                          },
+                                          {
+                                            "type": "Field",
+                                            "xs": 12,
+                                            "id": "kf1hztzj",
+                                            "field": "password",
+                                            "hideView": false,
+                                            "noLabel": false,
+                                            "md": 3,
+                                            "identifier": "settings",
+                                            "title": "Settings",
+                                            "withBigMargin": true
+                                          },
+                                          {
+                                            "type": "Field",
+                                            "xs": 12,
+                                            "id": "kf1hzzi4",
+                                            "field": "email",
+                                            "hideView": false,
+                                            "noLabel": false,
+                                            "md": 3,
+                                            "identifier": "settings",
+                                            "title": "Settings",
+                                            "withBigMargin": true
+                                          },
+                                          {
+                                            "type": "Field",
+                                            "xs": 12,
+                                            "id": "kf1i0f5j",
+                                            "field": "person",
+                                            "hideView": false,
+                                            "noLabel": false,
+                                            "md": 3,
+                                            "identifier": "settings",
+                                            "title": "Settings",
+                                            "withBigMargin": true
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "GridItem",
+                                "xs": 12,
+                                "id": "kf1hwuoy",
+                                "md": 3,
+                                "field": "username",
+                                "hideView": false,
+                                "identifier": "settings",
+                                "title": "Settings",
+                                "withBigMargin": true,
+                                "items": [
+                                  {
+                                    "type": "AnimationItem",
+                                    "xs": 12,
+                                    "id": "kf1hxchu",
+                                    "items": [
+                                      {
+                                        "type": "Paper",
+                                        "xs": 12,
+                                        "id": "kf1hxg9z",
+                                        "title": "2FA",
+                                        "withBigMargin": true,
+                                        "field": "username",
+                                        "md": 3,
+                                        "identifier": "settings",
+                                        "items": [
+                                          {
+                                            "type": "Field",
+                                            "xs": 12,
+                                            "id": "kf1hz8ja",
+                                            "field": "mfa_qr",
+                                            "hideView": false,
+                                            "noLabel": true,
+                                            "md": 3,
+                                            "identifier": "settings",
+                                            "title": "Settings",
+                                            "withBigMargin": true,
+                                            "hideEdit": false
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "TabItem",
+                    "xs": 12,
+                    "id": "kf1htyuz",
+                    "title": "Settings",
+                    "identifier": "settings",
+                    "field": "username",
+                    "hideView": false,
+                    "md": 9,
+                    "items": [
+                      {
+                        "type": "AnimationContainer",
+                        "xs": 12,
+                        "id": "kf1hulnr",
+                        "items": [
+                          {
+                            "type": "AnimationItem",
+                            "xs": 12,
+                            "id": "kf1hyl1c",
+                            "items": [
+                              {
+                                "type": "Paper",
+                                "xs": 12,
+                                "id": "kf1hynnm",
+                                "title": "Settings",
+                                "withBigMargin": true,
+                                "hideView": false,
+                                "field": "username",
+                                "md": 3,
+                                "identifier": "settings"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "buttons": ["2fa-configure"],
+            "factsBar": ["picture", "full_name", "username", "roles", "person"]
+          }
+        },
+        "icon": "FaUsers",
+        "app": "System",
+        "api": {
+          "read": {
+            "0": "read",
+            "active": false
+          }
+        },
+        "preview": {
+          "fields": ["full_name", "email", "person"],
+          "icon": "picture",
+          "picture": "picture",
+          "enabled": true
+        },
+        "extensions": {
+          "2fa": {
+            "name": "2FA",
+            "app_name": "AppBox",
+            "2fa_enabled_field": "mfa_enabled",
+            "2fa_secret_field": "mfa_secret",
+            "2fa_qr_field": "mfa_qr",
+            "username_field": "first_name",
+            "active": true
+          }
+        }
+      }
+    }
+  },
   "optional": { "models": {} }
 }

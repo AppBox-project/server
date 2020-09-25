@@ -12,7 +12,7 @@ export default [
     key: "getModelFromId",
     action: async (args, models, socket, socketInfo) => {
       if (typeof args.objectId === "string") {
-        const object = await models.entries.model.findOne({
+        const object = await models.objects.model.findOne({
           _id: args.objectId,
         });
         socket.emit(`receive-${args.requestId}`, object.objectId);
@@ -25,7 +25,7 @@ export default [
     key: "listenForObjects",
     action: (args, models, socket, socketInfo) => {
       // Check object type permissions
-      models.objects.model.findOne({ key: args.type }).then((objectType) => {
+      models.models.model.findOne({ key: args.type }).then((objectType) => {
         if (objectType) {
           let hasReadAccess = false;
           objectType.permissions.read.map((permission) => {
@@ -37,7 +37,7 @@ export default [
           if (hasReadAccess) {
             // Find data
             const returnData = async () => {
-              let data = await models.entries.model.find({
+              let data = await models.objects.model.find({
                 objectId: args.type,
                 ...args.filter,
               });
@@ -67,7 +67,7 @@ export default [
               });
             };
 
-            models.entries.listeners[args.requestId] = (change) => {
+            models.objects.listeners[args.requestId] = (change) => {
               returnData();
             };
             socketInfo.listeners.push(args.requestId);
@@ -95,7 +95,7 @@ export default [
     key: "unlistenForObjects",
     action: (args, models, socket, socketInfo) => {
       //console.log(`Cleaning up data request ${args.requestId}`);
-      delete models.entries.listeners[args.requestId];
+      delete models.objects.listeners[args.requestId];
       remove(socketInfo.listeners, (o) => {
         return o === args.requestId;
       });
@@ -108,12 +108,12 @@ export default [
     key: "listenForObjectTypes",
     action: (args, models, socket, socketInfo) => {
       const returnData = () => {
-        models.objects.model.find(args.filter).then((objects) => {
+        models.models.model.find(args.filter).then((objects) => {
           socket.emit(`receive-${args.requestId}`, objects);
         });
       };
 
-      models.objects.listeners[args.requestId] = (change) => {
+      models.models.listeners[args.requestId] = (change) => {
         returnData();
       };
       socketInfo.listeners.push(args.requestId);
@@ -126,7 +126,7 @@ export default [
     key: "unlistenForObjectTypes",
     action: (args, models, socket, socketInfo) => {
       //console.log(`Cleaning up data request ${args.requestId}`);
-      delete models.objects.listeners[args.requestId];
+      delete models.models.listeners[args.requestId];
       remove(socketInfo.listeners, (o) => {
         return o === args.requestId;
       });
@@ -153,40 +153,38 @@ export default [
     // (requestId, objectId)
     key: "deleteObject",
     action: (args, models, socket, socketInfo) => {
-      models.entries.model.findOne({ _id: args.objectId }).then((object) => {
+      models.objects.model.findOne({ _id: args.objectId }).then((object) => {
         if (object) {
-          models.objects.model
-            .findOne({ key: object.objectId })
-            .then((type) => {
-              let hasDeleteAccess = false;
-              type.permissions.delete.map((permission) => {
-                if (socketInfo.permissions.includes(permission)) {
-                  hasDeleteAccess = true;
-                }
-              });
+          models.models.model.findOne({ key: object.objectId }).then((type) => {
+            let hasDeleteAccess = false;
+            type.permissions.delete.map((permission) => {
+              if (socketInfo.permissions.includes(permission)) {
+                hasDeleteAccess = true;
+              }
+            });
 
-              if (hasDeleteAccess) {
-                if (socketInfo.username !== object.data.username) {
-                  models.entries.model
-                    .deleteOne({ _id: args.objectId })
-                    .then(() => {
-                      socket.emit(`receive-${args.requestId}`, {
-                        success: true,
-                      });
+            if (hasDeleteAccess) {
+              if (socketInfo.username !== object.data.username) {
+                models.objects.model
+                  .deleteOne({ _id: args.objectId })
+                  .then(() => {
+                    socket.emit(`receive-${args.requestId}`, {
+                      success: true,
                     });
-                } else {
-                  socket.emit(`receive-${args.requestId}`, {
-                    success: false,
-                    reason: "cannot-delete-self",
                   });
-                }
               } else {
                 socket.emit(`receive-${args.requestId}`, {
                   success: false,
-                  reason: "no-delete-permission",
+                  reason: "cannot-delete-self",
                 });
               }
-            });
+            } else {
+              socket.emit(`receive-${args.requestId}`, {
+                success: false,
+                reason: "no-delete-permission",
+              });
+            }
+          });
         } else {
           socket.emit(`receive-${args.requestId}`, {
             success: false,

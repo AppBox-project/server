@@ -6,7 +6,7 @@ import { systemLog } from "../Utils/Utils";
 // This is the rewritten version of validate data
 const validateNewObject = async (models, newObject, oldObject) => {
   const errors = [];
-  const model = await models.objects.model.findOne({
+  const model = await models.models.model.findOne({
     key: oldObject.objectId,
   });
 
@@ -28,7 +28,7 @@ const validateNewObject = async (models, newObject, oldObject) => {
             if (field.unique) {
               const sk = `data.${fieldId}`;
 
-              const duplicate = await models.entries.model.findOne({
+              const duplicate = await models.objects.model.findOne({
                 objectId: model.key,
                 [sk]: newObject.data[fieldId],
               });
@@ -112,7 +112,7 @@ export default {
                 // Check 2
                 if (field.unique) {
                   const sk = "data." + k;
-                  models.entries.model
+                  models.objects.model
                     .findOne({
                       objectId: type,
                       [sk]: object[k],
@@ -206,7 +206,7 @@ export default {
     // This is a weird version of the function I created for updateMany. Todo: merge with main updateObject
     // Todo: this may require a permissions check (see older functions)
     return new Promise(async (resolve, reject) => {
-      const oldObject = await models.entries.model.findOne({ _id: id });
+      const oldObject = await models.objects.model.findOne({ _id: id });
       let newObject = oldObject;
       map(changes, (value, fieldId) => {
         newObject.data[fieldId] = value;
@@ -217,7 +217,7 @@ export default {
       if (validations.length < 1) {
         // Passed
         // Step 2: Transform data
-        const model = await models.objects.model.findOne({
+        const model = await models.models.model.findOne({
           key: oldObject.objectId,
         });
 
@@ -246,7 +246,7 @@ export default {
     args: { type: string; objectId: string; toChange; requestId: string },
     socket
   ) => {
-    models.objects.model.findOne({ key: args.type }).then((model) => {
+    models.models.model.findOne({ key: args.type }).then((model) => {
       if (model) {
         let hasWriteAccess = false;
         model.permissions.write.map((permission) => {
@@ -257,7 +257,7 @@ export default {
 
         // Validate & save
         if (hasWriteAccess) {
-          models.entries.model.findOne({ _id: args.objectId }).then((entry) => {
+          models.objects.model.findOne({ _id: args.objectId }).then((entry) => {
             // Create the new object
             const newObject = entry._doc.data;
             map(args.toChange, (v, k) => {
@@ -321,7 +321,7 @@ export default {
     args: { type: string; object; requestId: string },
     socket
   ) => {
-    models.objects.model.findOne({ key: args.type }).then(async (model) => {
+    models.models.model.findOne({ key: args.type }).then(async (model) => {
       if (model) {
         let hasCreateAccess = false;
         model.permissions.create.map((permission) => {
@@ -342,7 +342,7 @@ export default {
 
           // Todo: objectcount is only used when a auto_name field is present.
           const objectCount: number =
-            (await models.entries.model.countDocuments({
+            (await models.objects.model.countDocuments({
               objectId: args.type,
             })) + 1;
 
@@ -364,7 +364,7 @@ export default {
             .validateData(model, args.object, args.type, models, false)
             .then(
               () => {
-                new models.entries.model(
+                new models.objects.model(
                   f.data.transformData(
                     {
                       data: args.object,
