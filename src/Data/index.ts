@@ -66,6 +66,11 @@ import {
   optional as RlPersonCompanyModelOptional,
 } from "./Models/RlPersonCompany";
 
+import {
+  required as RequiredObjects,
+  optional as OptionalObjects,
+} from "./Objects";
+
 // Data manifest
 const DataManifest = {
   version: "0.0.1",
@@ -83,6 +88,7 @@ const DataManifest = {
       companies: CompaniesModelRequired,
       "rl-person-company": RlPersonCompanyModelRequired,
     },
+    objects: RequiredObjects,
   },
   optional: {
     models: {
@@ -97,6 +103,7 @@ const DataManifest = {
       companies: CompaniesModelOptional,
       "rl-person-company": RlPersonCompanyModelOptional,
     },
+    objects: OptionalObjects,
   },
 };
 

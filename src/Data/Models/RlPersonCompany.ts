@@ -37,7 +37,7 @@ export const required = {
       type: "relationship",
       required: true,
       typeArgs: {
-        relationshipTo: "person",
+        relationshipTo: "people",
       },
       managed: true,
     },

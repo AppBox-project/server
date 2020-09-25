@@ -1,8 +1,10 @@
+import DataManifest from "../../Data";
 import f from "../Functions";
 import { getIndex } from "../Utils/Index";
 import { systemLog } from "../Utils/Utils";
 import { setUp2FA, compareSecretAndToken } from "./ServerActions";
 const fuzzysort = require("fuzzysort");
+import { map, merge } from "lodash";
 
 export default [
   {
@@ -113,5 +115,11 @@ export default [
 ];
 
 export const initServer = async (args, models, socket, socketInfo) => {
-  console.log(args);
+  const newModels = [];
+  const mergedModels = merge(
+    DataManifest.required.models,
+    DataManifest.optional.models
+  );
+  map(mergedModels, (newModel, key) => newModels.push(newModel));
+  models.models.model.insertMany(newModels);
 };
