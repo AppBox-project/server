@@ -214,7 +214,11 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
           if (!initialised) {
             socket.emit("noInit");
             socket.on("initServer", (args) => {
-              initServer(args, models, socket, socketInfo);
+              if (!initialised)
+                initServer(args, models, socket, socketInfo, () => {
+                  console.log("Initialisation is done");
+                  initialised = true;
+                });
             });
           } else {
             actions.map((action) => {

@@ -162,11 +162,11 @@ const updateObjectIndex = async (change, models) => {
 
     const io = {
       primary: newObject.data[model?.primary],
-      type: model.key,
+      type: model?.key,
       id: newObject._id.toString(),
     };
-    let keyword = `${newObject.data[model.primary]}`;
-    if (model.indexed_fields) {
+    let keyword = `${newObject.data[model?.primary]}`;
+    if (model?.indexed_fields) {
       model.indexed_fields.split(",").map((field, index) => {
         keyword = `${keyword} ${newObject.data[field]}`;
       });

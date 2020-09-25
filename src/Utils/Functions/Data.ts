@@ -319,114 +319,120 @@ export default {
     models,
     socketInfo,
     args: { type: string; object; requestId: string },
-    socket
-  ) => {
-    models.models.model.findOne({ key: args.type }).then(async (model) => {
-      if (model) {
-        let hasCreateAccess = false;
-        model.permissions.create.map((permission) => {
-          if (
-            socketInfo.permissions.includes(permission) ||
-            socketInfo.permissions.includes("system")
-          ) {
+    socket,
+    serverInitialisedAction = false
+  ) =>
+    new Promise((resolve, reject) => {
+      models.models.model.findOne({ key: args.type }).then(async (model) => {
+        if (model) {
+          let hasCreateAccess = false;
+          if (serverInitialisedAction) {
             hasCreateAccess = true;
-          }
-        });
-        if (hasCreateAccess) {
-          // Add any default values to the new object's model
-          map(model.fields, (mField, mKey) => {
-            if (mField.default) {
-              args.object[mKey] = mField.default;
-            }
-          });
-
-          // Todo: objectcount is only used when a auto_name field is present.
-          const objectCount: number =
-            (await models.objects.model.countDocuments({
-              objectId: args.type,
-            })) + 1;
-
-          // Add any default values to the new object's model
-          map(model.fields, async (mField, mKey) => {
-            if (mField.default) {
-              args.object[mKey] = mField.default;
-            }
-            if (mField.type === "auto_name") {
-              args.object[mKey] = `${mField.typeArgs.prefix}-${
-                mField.typeArgs.mode === "random" ? uniqueId() : objectCount
-              }`;
-            }
-          });
-
-          // Validate & save
-
-          f.data
-            .validateData(model, args.object, args.type, models, false)
-            .then(
-              () => {
-                new models.objects.model(
-                  f.data.transformData(
-                    {
-                      data: args.object,
-                      objectId: args.type,
-                    },
-                    model,
-                    {}
-                  )
-                )
-                  .save()
-                  .then((data) => {
-                    // We're done. The object was saved.
-
-                    if (typeof socket === "function") {
-                      socket({ success: true });
-                    } else {
-                      socket.emit(`receive-${args.requestId}`, {
-                        success: true,
-                      });
-                    }
-                  });
-              },
-              (feedback) => {
-                if (typeof socket === "function") {
-                  socket({
-                    success: false,
-                    feedback,
-                  });
-                } else {
-                  socket.emit(`receive-${args.requestId}`, {
-                    success: false,
-                    feedback,
-                  });
-                }
+          } else {
+            model.permissions.create.map((permission) => {
+              if (
+                socketInfo.permissions.includes(permission) ||
+                socketInfo.permissions.includes("system")
+              ) {
+                hasCreateAccess = true;
               }
-            );
+            });
+          }
+          if (hasCreateAccess) {
+            // Add any default values to the new object's model
+            map(model.fields, (mField, mKey) => {
+              if (mField.default) {
+                args.object[mKey] = mField.default;
+              }
+            });
+
+            // Todo: objectcount is only used when a auto_name field is present.
+            const objectCount: number =
+              (await models.objects.model.countDocuments({
+                objectId: args.type,
+              })) + 1;
+
+            // Add any default values to the new object's model
+            map(model.fields, async (mField, mKey) => {
+              if (mField.default) {
+                args.object[mKey] = mField.default;
+              }
+              if (mField.type === "auto_name") {
+                args.object[mKey] = `${mField.typeArgs.prefix}-${
+                  mField.typeArgs.mode === "random" ? uniqueId() : objectCount
+                }`;
+              }
+            });
+
+            // Validate & save
+            f.data
+              .validateData(model, args.object, args.type, models, false)
+              .then(
+                () => {
+                  new models.objects.model(
+                    f.data.transformData(
+                      {
+                        data: args.object,
+                        objectId: args.type,
+                      },
+                      model,
+                      {}
+                    )
+                  )
+                    .save()
+                    .then((data) => {
+                      // We're done. The object was saved.
+                      resolve(data._id.toString());
+                      if (typeof socket === "function") {
+                        socket({ success: true });
+                      } else {
+                        socket.emit(`receive-${args.requestId}`, {
+                          success: true,
+                        });
+                      }
+                    });
+                },
+                (feedback) => {
+                  if (typeof socket === "function") {
+                    socket({
+                      success: false,
+                      feedback,
+                    });
+                  } else {
+                    socket.emit(`receive-${args.requestId}`, {
+                      success: false,
+                      feedback,
+                    });
+                  }
+                }
+              );
+          } else {
+            if (typeof socket === "function") {
+              socket({
+                success: false,
+                reason: "no-create-permission",
+              });
+            } else {
+              socket.emit(`receive-${args.requestId}`, {
+                success: false,
+                reason: "no-create-permission",
+              });
+            }
+          }
         } else {
+          reject("no-such-object");
           if (typeof socket === "function") {
             socket({
               success: false,
-              reason: "no-create-permission",
+              reason: "no-such-object",
             });
           } else {
             socket.emit(`receive-${args.requestId}`, {
               success: false,
-              reason: "no-create-permission",
+              reason: "no-such-object",
             });
           }
         }
-      } else {
-        if (typeof socket === "function") {
-          socket({
-            success: false,
-            reason: "no-such-object",
-          });
-        } else {
-          socket.emit(`receive-${args.requestId}`, {
-            success: false,
-            reason: "no-such-object",
-          });
-        }
-      }
-    });
-  },
+      });
+    }),
 };

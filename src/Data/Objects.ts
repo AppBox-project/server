@@ -1,8 +1,7 @@
 export const required = [
   {
-    _id: {
-      $oid: "5ebe6e32fbbc234bb4a0cfd7",
-    },
+    _id: "5ebe6e32fbbc234bb4a0cfd7",
+
     objectId: "apps",
     data: {
       name: "Data Explorer",
@@ -23,9 +22,8 @@ export const required = [
     },
   },
   {
-    _id: {
-      $oid: "5ebe6e53fbbc234bb4a0cfd8",
-    },
+    _id: "5ebe6e53fbbc234bb4a0cfd8",
+
     objectId: "apps",
     data: {
       name: "Object Manager",
@@ -46,9 +44,8 @@ export const required = [
     },
   },
   {
-    _id: {
-      $oid: "5ebe6e9afbbc234bb4a0cfda",
-    },
+    _id: "5ebe6e9afbbc234bb4a0cfda",
+
     objectId: "apps",
     data: {
       name: "App Hub",
@@ -68,31 +65,7 @@ export const required = [
     },
   },
   {
-    _id: {
-      $oid: "5ebe6e9afbbc234bb4a0cfda",
-    },
-    objectId: "apps",
-    data: {
-      name: "App Hub",
-      id: "app-hub",
-      core: true,
-      color: {
-        r: 232,
-        g: 139,
-        b: 69,
-        a: 1,
-      },
-      icon: "FaStoreAlt",
-      mobileSettings: {
-        actionsDisplayAs: "bottom-navigation",
-      },
-      permission___view: "admin",
-    },
-  },
-  {
-    _id: {
-      $oid: "5ec2af40cd836f336c11e1e1",
-    },
+    _id: "5ec2af40cd836f336c11e1e1",
     data: {
       name: "Settings",
       id: "settings",
@@ -114,9 +87,8 @@ export const required = [
     __v: 0,
   },
   {
-    _id: {
-      $oid: "5f196d357ec1ec39f8ac49c7",
-    },
+    _id: "5f196d357ec1ec39f8ac49c7",
+
     data: {
       name: "Calendar",
       id: "calendar",
@@ -134,9 +106,8 @@ export const required = [
     __v: 0,
   },
   {
-    _id: {
-      $oid: "5ec92a260c0cc81eefb9154c",
-    },
+    _id: "5ec92a260c0cc81eefb9154c",
+
     data: {
       name: "user",
       description: "Allows for common user actions.",
@@ -145,9 +116,8 @@ export const required = [
     __v: 0,
   },
   {
-    _id: {
-      $oid: "5ec92a550c0cc81eefb9154d",
-    },
+    _id: "5ec92a550c0cc81eefb9154d",
+
     data: {
       name: "admin",
       description: "Allows for most admin actions.",
@@ -156,9 +126,8 @@ export const required = [
     __v: 0,
   },
   {
-    _id: {
-      $oid: "5ee120754052e80183dec284",
-    },
+    _id: "5ee120754052e80183dec284",
+
     data: {
       name: "read-system-process",
       description: "Allows reading of system processes",
@@ -167,9 +136,8 @@ export const required = [
     __v: 0,
   },
   {
-    _id: {
-      $oid: "5ee1209f4052e80183dec285",
-    },
+    _id: "5ee1209f4052e80183dec285",
+
     data: {
       name: "create-system-process",
       description: "Allows for creation of system processes",
@@ -178,9 +146,8 @@ export const required = [
     __v: 0,
   },
   {
-    _id: {
-      $oid: "5ee121464052e80183dec286",
-    },
+    _id: "5ee121464052e80183dec286",
+
     data: {
       name: "nobody",
       description: "Nobody can perform this action.",
@@ -192,9 +159,8 @@ export const required = [
 
 export const optional = [
   {
-    _id: {
-      $oid: "5ec92a7c0c0cc81eefb9154e",
-    },
+    _id: "5ec92a7c0c0cc81eefb9154e",
+
     data: {
       name: "User",
       description: "General user of the system",
@@ -204,9 +170,8 @@ export const optional = [
     __v: 0,
   },
   {
-    _id: {
-      $oid: "5ec92a880c0cc81eefb9154f",
-    },
+    _id: "5ec92a880c0cc81eefb9154f",
+
     data: {
       name: "Admin",
       description: "Administrators of the system",
@@ -221,15 +186,13 @@ export const optional = [
     __v: 0,
   },
   {
-    _id: {
-      $oid: "5f41220ee5870d04f13d54d4",
-    },
+    _id: "5f41220ee5870d04f13d54d4",
+
     data: {
       active: true,
       name: "Auto update",
       description: "<p>Automatically updates the software overnight.</p>",
       __v: 0,
-      _id: "5f41220ee5870d04f13d54d4",
       objectId: "automations",
       triggers: [
         {
@@ -260,9 +223,8 @@ export const optional = [
     __v: 8,
   },
   {
-    _id: {
-      $oid: "5f415dd443478906166a43a4",
-    },
+    _id: "5f415dd443478906166a43a4",
+
     data: {
       name: "Auto backup",
       description: "<p>Performs a weekly backup of the database.</p>",
@@ -296,21 +258,15 @@ export const optional = [
     __v: 1,
   },
   {
-    _id: {
-      $oid: "5f415eb143478906166a43a5",
-    },
+    _id: "5f415eb143478906166a43a5",
+
     data: {
       active: true,
       name: "Task cleanup",
       description: "<p>Cleans up all finished tasks every night at 1.</p>",
       actions: [
         {
-          args: {
-            model: "system-task",
-            filter: {
-              "data.done": true,
-            },
-          },
+          args: '{model: "system-task",filter: {"data.done": true}}',
           type: "DeleteObjects",
         },
       ],
@@ -327,9 +283,8 @@ export const optional = [
     __v: 6,
   },
   {
-    _id: {
-      $oid: "5f56334f73b49305d1ea3443",
-    },
+    _id: "5f56334f73b49305d1ea3443",
+
     data: {
       name: "MFA",
       key: "2fa",
