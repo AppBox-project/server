@@ -65,7 +65,7 @@ export const generateDocument = async (context) => {
     _id: context.args.objectId,
   });
 
-  const dir = `/AppBox/Files/Objects/${object.objectId}`;
+  const dir = `/AppBox/Files/Objects/${object.objectId}/${object._id}`;
   const filename = `${template.data["filename-prefix"]}-${uniqid()}.pdf`;
 
   if (!fs.existsSync(dir)) {
