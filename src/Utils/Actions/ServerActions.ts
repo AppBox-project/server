@@ -69,14 +69,13 @@ export const generateDocument = async (context) => {
   const filename = `${template.data["filename-prefix"]}-${uniqid()}.pdf`;
 
   if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir);
+    fs.mkdirSync(dir, { recursive: true });
   }
 
   const output = nunjucks.renderString(template.data.template, object.data);
   wkhtmltopdf(output, { pageSize: "letter" }).pipe(
     fs.createWriteStream(`${dir}/${filename}`)
   );
-
   context.models.attachments.model.create({
     objectId: object._id,
     path: `${dir}/${filename}`,
