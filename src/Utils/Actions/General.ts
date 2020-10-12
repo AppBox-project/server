@@ -2,7 +2,11 @@ import DataManifest from "../../Data";
 import f from "../Functions";
 import { getIndex } from "../Utils/Index";
 import { systemLog } from "../Utils/Utils";
-import { setUp2FA, compareSecretAndToken } from "./ServerActions";
+import {
+  setUp2FA,
+  compareSecretAndToken,
+  generateDocument,
+} from "./ServerActions";
 const fuzzysort = require("fuzzysort");
 import { map, merge } from "lodash";
 import Data from "../Functions/Data";
@@ -106,6 +110,9 @@ export default [
             requestArguments.qr_field,
             requestArguments.qr
           ).then((response) => socket.emit(response));
+          break;
+        case "generateDocument":
+          generateDocument(context);
           break;
         default:
           systemLog("Unknown action");

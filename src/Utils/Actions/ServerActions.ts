@@ -1,5 +1,10 @@
+import { overArgs } from "lodash";
 import { SocketInfoType } from "../../Utils/Utils/Types";
+import nunjucks from "../Utils/Nunjucks";
 var twoFactor = require("node-2fa");
+var wkhtmltopdf = require("wkhtmltopdf");
+const fs = require("fs");
+var uniqid = require("uniqid");
 
 export const setUp2FA = (context: {
   args: { [key: string]: any };
@@ -51,3 +56,30 @@ export const compareSecretAndToken = (
       object.save().then(() => resolve("good"));
     }
   });
+
+export const generateDocument = async (context) => {
+  const template = await context.models.objects.model.findOne({
+    _id: context.args.template,
+  });
+  const object = await context.models.objects.model.findOne({
+    _id: context.args.objectId,
+  });
+
+  const dir = `/AppBox/Files/Objects/${object.objectId}`;
+  const filename = `${template.data["filename-prefix"]}-${uniqid()}.pdf`;
+
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir);
+  }
+
+  const output = nunjucks.renderString(template.data.template, object.data);
+  wkhtmltopdf(output, { pageSize: "letter" }).pipe(
+    fs.createWriteStream(`${dir}/${filename}`)
+  );
+
+  context.models.attachments.model.create({
+    objectId: object.objectId,
+    path: `${dir}/${filename}`,
+    name: filename,
+  });
+};

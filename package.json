@@ -21,11 +21,13 @@
     "node-2fa": "^1.1.2",
     "node-http-ping": "^0.3.1",
     "nodemon": "^2.0.4",
+    "nunjucks": "^3.2.2",
     "socket.io": "^2.3.0",
     "ts-node": "^9.0.0",
     "tsc": "^1.20150623.0",
     "typescript": "^3.9.7",
-    "uniqid": "^5.2.0"
+    "uniqid": "^5.2.0",
+    "wkhtmltopdf": "^0.3.4"
   },
   "name": "appbox-server",
   "version": "0.0.1",

@@ -18,6 +18,7 @@ require("./Utils/Models/Models");
 require("./Utils/Models/Archive");
 require("./Utils/Models/Objects");
 require("./Utils/Models/AppPermissions");
+require("./Utils/Models/Attachments");
 require("./Utils/Models/UserSettings");
 
 // Start up server
@@ -54,6 +55,10 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
         },
         archive: {
           model: mongoose.model("Archive"),
+          listeners: {},
+        },
+        attachments: {
+          model: mongoose.model("Attachments"),
           listeners: {},
         },
         objects: {
