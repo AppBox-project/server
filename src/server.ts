@@ -59,6 +59,7 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
         },
         attachments: {
           model: mongoose.model("Attachments"),
+          stream: db.collection("attachments").watch(),
           listeners: {},
         },
         objects: {
@@ -91,6 +92,12 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
       });
       models.usersettings.stream.on("change", (change) => {
         map(models.usersettings.listeners, (listener) => {
+          //@ts-ignore
+          listener(change);
+        });
+      });
+      models.attachments.stream.on("change", (change) => {
+        map(models.attachments.listeners, (listener) => {
           //@ts-ignore
           listener(change);
         });

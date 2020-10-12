@@ -78,7 +78,7 @@ export const generateDocument = async (context) => {
   );
 
   context.models.attachments.model.create({
-    objectId: object.objectId,
+    objectId: object._id,
     path: `${dir}/${filename}`,
     name: filename,
   });

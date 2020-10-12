@@ -315,4 +315,32 @@ export default [
       }
     },
   },
+  {
+    key: "listenForAttachments",
+    action: async (args, models, socket, socketInfo) => {
+      const returnData = async () => {
+        const response = await models.attachments.model.find({
+          objectId: args.objectId,
+        });
+        socket.emit(`receive-${args.requestId}`, {
+          success: true,
+          data: response,
+        });
+      };
+      models.attachments.listeners[args.requestId] = (change) => {
+        returnData();
+      };
+      socketInfo.listeners.push(args.requestId);
+      returnData();
+    },
+  },
+  {
+    key: "unlistenForAttachments",
+    action: async (args, models, socket, socketInfo) => {
+      delete models.attachments.listeners[args.requestId];
+      remove(socketInfo.listeners, (o) => {
+        return o === args.requestId;
+      });
+    },
+  },
 ];
