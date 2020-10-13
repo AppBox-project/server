@@ -69,6 +69,8 @@ export const generateDocument = async (context) => {
   const filename = `${template.data["filename-prefix"]}-${uniqid()}.pdf`;
 
   if (!fs.existsSync(dir)) {
+    console.log(`Making directory ${dir}`);
+
     fs.mkdirSync(dir, { recursive: true });
   }
 
