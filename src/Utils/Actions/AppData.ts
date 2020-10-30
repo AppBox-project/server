@@ -437,7 +437,7 @@ export default [
 
           // Add any default values to the new object's model
           map(model.fields, async (mField, mKey) => {
-            if (mField.default) {
+            if (mField.default && !args.object[mKey]) {
               args.object[mKey] = mField.default;
             }
             if (mField.type === "auto_name") {
@@ -522,7 +522,7 @@ export default [
                 let newObject = obj;
                 // Add any default values to the new object's model
                 map(model.fields, (mField, mKey) => {
-                  if (mField.default) {
+                  if (mField.default && !newObject[mKey]) {
                     newObject[mKey] = mField.default;
                   }
                 });
