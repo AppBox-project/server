@@ -339,13 +339,6 @@ export default {
             });
           }
           if (hasCreateAccess) {
-            // Add any default values to the new object's model
-            map(model.fields, (mField, mKey) => {
-              if (mField.default) {
-                args.object[mKey] = mField.default;
-              }
-            });
-
             // Todo: objectcount is only used when a auto_name field is present.
             const objectCount: number =
               (await models.objects.model.countDocuments({
@@ -354,7 +347,8 @@ export default {
 
             // Add any default values to the new object's model
             map(model.fields, async (mField, mKey) => {
-              if (mField.default) {
+              if (mField.default && !args.object[mKey]) {
+                // When we have a default value, but no manual has been set.
                 args.object[mKey] = mField.default;
               }
               if (mField.type === "auto_name") {

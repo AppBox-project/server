@@ -64,16 +64,20 @@ export const generateDocument = async (context) => {
   const object = await context.models.objects.model.findOne({
     _id: context.args.objectId,
   });
-
-  const dir = `/AppBox/Files/Objects/${object.objectId}/${object._id}`;
-  const filename = `${template.data["filename-prefix"]}-${uniqid()}.pdf`;
-
-  if (!fs.existsSync(dir)) {
-    console.log(`Making directory ${dir}`);
-
-    fs.mkdirSync(dir, { recursive: true });
-  }
-
+  await new context.models.objects.model({
+    objectId: "system-tasks",
+    data: {
+      name: `Generate '${template.data.name}' for ${template.data.model}`,
+      type: "generate-document",
+      action: "generate-document",
+      done: false,
+      progress: 0,
+      state: "Waiting...",
+      target: "Engine",
+      arguments: { template, object },
+    },
+  }).save();
+  /*
   const output = nunjucks.renderString(template.data.template, object.data);
   wkhtmltopdf(output, { pageSize: "letter" }).pipe(
     fs.createWriteStream(`${dir}/${filename}`)
@@ -82,5 +86,5 @@ export const generateDocument = async (context) => {
     objectId: object._id,
     path: `${dir}/${filename}`,
     name: filename,
-  });
+  });*/
 };
