@@ -1,4 +1,5 @@
 // Model types
+
 export interface ModelType {
   key: string;
   name: string;
@@ -8,6 +9,8 @@ export interface ModelType {
   primary: string;
   fields: { [name: string]: ModelFieldType };
   overviews: [ModelOverviewType];
+  lists?: { [key: string]: ModelListType };
+
   layouts: any;
   actions: any;
   api?: {
@@ -30,6 +33,12 @@ export interface ModelType {
     archiveOwn: string[];
   };
   _id: any;
+}
+
+export interface ModelListType {
+  name: string;
+  filter: { key: string; operator: "equals" | "not_equals"; value: any }[];
+  visibleFor?: string[];
 }
 
 export interface ModelFieldType {

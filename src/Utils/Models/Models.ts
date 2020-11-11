@@ -18,6 +18,7 @@ mongoose.model(
       handlers: {},
       overviews: {},
       fields: {},
+      lists: {},
       api: {
         read: { active: Boolean, endpoint: String, authentication: String },
         create: { active: Boolean, endpoint: String, authentication: String },
