@@ -266,7 +266,7 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
     });
   })
   .catch((err) => {
-    systemLog(`No database found. Showing set-up instructions.`);
+    console.log(`No database found. Showing set-up instructions.`,err);
     app.get("/", function (req, res) {
       res.send("Hello World!");
     });

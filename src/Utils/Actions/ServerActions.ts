@@ -1,10 +1,6 @@
-import { overArgs } from "lodash";
 import { SocketInfoType } from "../../Utils/Utils/Types";
-import nunjucks from "../Utils/Nunjucks";
 var twoFactor = require("node-2fa");
-var wkhtmltopdf = require("wkhtmltopdf");
 const fs = require("fs");
-var uniqid = require("uniqid");
 
 export const setUp2FA = (context: {
   args: { [key: string]: any };
@@ -65,7 +61,7 @@ export const generateDocument = async (context) => {
     _id: context.args.objectId,
   });
   await new context.models.objects.model({
-    objectId: "system-tasks",
+    objectId: "system-task",
     data: {
       name: `Generate '${template.data.name}' for ${template.data.model}`,
       type: "generate-document",
@@ -77,14 +73,4 @@ export const generateDocument = async (context) => {
       arguments: { template, object },
     },
   }).save();
-  /*
-  const output = nunjucks.renderString(template.data.template, object.data);
-  wkhtmltopdf(output, { pageSize: "letter" }).pipe(
-    fs.createWriteStream(`${dir}/${filename}`)
-  );
-  context.models.attachments.model.create({
-    objectId: object._id,
-    path: `${dir}/${filename}`,
-    name: filename,
-  });*/
 };
