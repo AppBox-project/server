@@ -10,6 +10,7 @@ export interface ModelType {
   fields: { [name: string]: ModelFieldType };
   overviews: [ModelOverviewType];
   lists?: { [key: string]: ModelListType };
+  rules?: { [key: string]: ModelRuleType };
 
   layouts: any;
   actions: any;
@@ -33,6 +34,21 @@ export interface ModelType {
     archiveOwn: string[];
   };
   _id: any;
+}
+
+export interface ModelRuleType {
+  name: string;
+  rule: string;
+  message: string;
+  checkedOn:
+    | "All"
+    | "Insert"
+    | "Update"
+    | "Delete"
+    | "InsertAndUpdate"
+    | "InsertAndDelete"
+    | "UpdateAndDelete"
+    | "Never";
 }
 
 export interface ModelListType {

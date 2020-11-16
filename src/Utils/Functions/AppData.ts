@@ -1,5 +1,6 @@
 import Functions from ".";
 import { map } from "lodash";
+import { AppModelType } from "appbox-types";
 
 export default {
   checkUserObjectRights: async (
@@ -27,13 +28,13 @@ export default {
     object: string,
     permissionType: "create" | "write" | "read" | "delete" | "update"
   ) => {
-    const type = await models.apppermissions.model.findOne({
+    const model: AppModelType = await models.apppermissions.model.findOne({
       appId: app,
       objectId: object,
     });
 
-    if (type) {
-      if (type.permissions.includes(permissionType)) {
+    if (model) {
+      if (model.permissions.includes(permissionType)) {
         return true;
       } else {
         return false;
@@ -79,7 +80,9 @@ export default {
         )
       ) {
         // We have permission. Create object
-        const model = await models.models.model.findOne({ key: args.type });
+        const model: AppModelType = await models.models.model.findOne({
+          key: args.type,
+        });
         const oldObject = await models.objects.model.findOne({
           _id: args.id,
         });
@@ -97,6 +100,7 @@ export default {
             () => {
               oldObject.data = newObject;
 
+              // Before saving: execute any relevant rules
               oldObject.save().then(() => {
                 // We're done. The object was saved.
                 socket.emit(`receive-${args.requestId}`, {

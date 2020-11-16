@@ -1,7 +1,10 @@
 import { map, uniqueId } from "lodash";
 import f from "../Functions";
-import Functions from "../Functions";
+import { AppModelType } from "appbox-types";
 import { systemLog } from "../Utils/Utils";
+import { ModelRuleType } from "../Utils/Types";
+import Formula from "appbox-formulas";
+const uniqid = require("uniqid");
 
 // This is the rewritten version of validate data
 const validateNewObject = async (models, newObject, oldObject) => {
@@ -246,64 +249,114 @@ export default {
     args: { type: string; objectId: string; toChange; requestId: string },
     socket
   ) => {
-    models.models.model.findOne({ key: args.type }).then((model) => {
-      if (model) {
-        let hasWriteAccess = false;
-        model.permissions.write.map((permission) => {
-          if (socketInfo.permissions.includes(permission)) {
-            hasWriteAccess = true;
-          }
-        });
-
-        // Validate & save
-        if (hasWriteAccess) {
-          models.objects.model.findOne({ _id: args.objectId }).then((entry) => {
-            // Create the new object
-            const newObject = entry._doc.data;
-            map(args.toChange, (v, k) => {
-              newObject[k] = args.toChange[k];
-              entry.markModified(`data.${k}`);
-            });
-
-            f.data
-              .validateData(model, newObject, args.type, models, entry._doc)
-              .then(
-                async () => {
-                  entry.data = f.data.transformData(
-                    { data: newObject, objectId: args.type },
-                    model,
-                    args.toChange
-                  ).data;
-
-                  // Post process
-                  entry.save().then(() => {
-                    // We're done. The object was saved.
-                    socket.emit(`receive-${args.requestId}`, {
-                      success: true,
-                    });
-                  });
-                },
-                (feedback) => {
-                  socket.emit(`receive-${args.requestId}`, {
-                    success: false,
-                    feedback,
-                  });
-                }
-              );
+    models.models.model
+      .findOne({ key: args.type })
+      .then((model: AppModelType) => {
+        if (model) {
+          let hasWriteAccess = false;
+          model.permissions.write.map((permission) => {
+            if (socketInfo.permissions.includes(permission)) {
+              hasWriteAccess = true;
+            }
           });
+
+          // Validate & save
+          if (hasWriteAccess) {
+            models.objects.model
+              .findOne({ _id: args.objectId })
+              .then((entry) => {
+                // Create the new object
+                const newObject = entry._doc.data;
+                map(args.toChange, (v, k) => {
+                  newObject[k] = args.toChange[k];
+                  entry.markModified(`data.${k}`);
+                });
+
+                f.data
+                  .validateData(model, newObject, args.type, models, entry._doc)
+                  .then(
+                    async () => {
+                      entry.data = f.data.transformData(
+                        { data: newObject, objectId: args.type },
+                        model,
+                        args.toChange
+                      ).data;
+
+                      // Check if the model has any rules
+                      let passedRules = true;
+                      let feedback = [];
+                      if (model.rules) {
+                        await Object.keys(model.rules).reduce(
+                          //@ts-ignore
+                          async (prev, curr) => {
+                            await prev;
+                            const rule: ModelRuleType = model.rules[curr];
+                            if (
+                              rule.checkedOn === "All" ||
+                              rule.checkedOn === "InsertAndUpdate" ||
+                              rule.checkedOn === "UpdateAndDelete"
+                            ) {
+                              const formula = new Formula(
+                                `{{${rule.rule}}}`,
+                                model,
+                                models,
+                                uniqid()
+                              );
+                              await formula.compile();
+                              const result = await formula.calculate(
+                                entry.data,
+                                { models, object: entry }
+                              );
+
+                              // If result compiles to true we return a message
+                              if (result === "true") {
+                                passedRules = false;
+                                feedback.push({ reason: rule.message });
+                              }
+                            }
+
+                            return curr;
+                          },
+                          Object.keys(model.rules)[0]
+                        );
+                      }
+
+                      // Post process
+                      if (passedRules) {
+                        entry.save().then(() => {
+                          // We're done. The object was saved.
+                          socket.emit(`receive-${args.requestId}`, {
+                            success: true,
+                          });
+                        });
+                      } else {
+                        socket.emit(`receive-${args.requestId}`, {
+                          success: false,
+                          feedback,
+                        });
+                      }
+                    },
+                    (feedback) => {
+                      socket.emit(`receive-${args.requestId}`, {
+                        success: false,
+                        feedback,
+                      });
+                    }
+                  );
+              });
+          } else {
+            socket.emit(`receive-${args.requestId}`, {
+              success: false,
+              reason: "no-write-permission",
+            });
+          }
         } else {
           socket.emit(`receive-${args.requestId}`, {
             success: false,
-            reason: "no-write-permission",
+            reason: "no-such-object",
           });
         }
-      } else {
-        socket.emit(`receive-${args.requestId}`, {
-          success: false,
-          reason: "no-such-object",
-        });
-      }
-    });
+      });
   },
   // ----------> insertObject
   // This command inserts an object and performs all required checks
