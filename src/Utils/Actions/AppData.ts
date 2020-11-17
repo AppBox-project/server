@@ -25,7 +25,7 @@ export default [
           let linkName = "";
           defaultOverviewFields.push("name");
           args.newModel.linkedModels.map((link) => {
-            linkName += link.label.slice(0, 1);
+            linkName += link.slice(0, 1);
             defaultOverviewFields.push(link.value);
             defaultLayoutFields.push({
               type: "Field",
