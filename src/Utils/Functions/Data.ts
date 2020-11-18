@@ -415,8 +415,8 @@ export default {
             f.data
               .validateData(model, args.object, args.type, models, false)
               .then(
-                () => {
-                  new models.objects.model(
+                async () => {
+                  const newObject = new models.objects.model(
                     f.data.transformData(
                       {
                         data: args.object,
@@ -425,9 +425,52 @@ export default {
                       model,
                       {}
                     )
-                  )
-                    .save()
-                    .then((data) => {
+                  );
+
+                  // Log inserting
+                  // Check if the model has any rules
+                  let passedRules = true;
+                  let feedback = [];
+                  if (model.rules) {
+                    await Object.keys(model.rules).reduce(
+                      //@ts-ignore
+                      async (prev, curr) => {
+                        await prev;
+                        const rule: ModelRuleType = model.rules[curr];
+                        if (
+                          rule.checkedOn === "All" ||
+                          rule.checkedOn === "InsertAndUpdate" ||
+                          rule.checkedOn === "InsertAndDelete"
+                        ) {
+                          const formula = new Formula(
+                            `{{${rule.rule}}}`,
+                            model,
+                            models,
+                            uniqid()
+                          );
+                          await formula.compile();
+                          const result = await formula.calculate(
+                            newObject.data,
+                            {
+                              models,
+                              object: newObject,
+                            }
+                          );
+
+                          // If result compiles to true we return a message and block insertion.
+                          if (result === "true") {
+                            passedRules = false;
+                            feedback.push({ reason: rule.message });
+                          }
+                        }
+
+                        return curr;
+                      },
+                      Object.keys(model.rules)[0]
+                    );
+                  }
+                  if (passedRules) {
+                    newObject.save().then((data) => {
                       // We're done. The object was saved.
                       resolve(data._id.toString());
                       if (typeof socket === "function") {
@@ -438,6 +481,12 @@ export default {
                         });
                       }
                     });
+                  } else {
+                    socket.emit(`receive-${args.requestId}`, {
+                      success: false,
+                      feedback,
+                    });
+                  }
                 },
                 (feedback) => {
                   if (typeof socket === "function") {
