@@ -1,5 +1,8 @@
 import { SocketInfoType } from "../../Utils/Utils/Types";
 var twoFactor = require("node-2fa");
+import Formula from "appbox-formulas";
+const uniqid = require("uniqid");
+var pdf = require("html-pdf");
 const fs = require("fs");
 
 export const setUp2FA = (context: {
@@ -60,17 +63,35 @@ export const generateDocument = async (context) => {
   const object = await context.models.objects.model.findOne({
     _id: context.args.objectId,
   });
-  await new context.models.objects.model({
-    objectId: "system-task",
-    data: {
-      name: `Generate '${template.data.name}' for ${template.data.model}`,
-      type: "generate-document",
-      action: "generate-document",
-      done: false,
-      progress: 0,
-      state: "Waiting...",
-      target: "Engine",
-      arguments: { template, object },
-    },
-  }).save();
+  const model = await context.models.models.model.findOne({
+    key: object.objectId,
+  });
+
+  const formula = new Formula(
+    template.data.template,
+    model,
+    context.models,
+    uniqid()
+  );
+
+  formula.compile();
+
+  const html = await formula.calculate(object.data, {
+    models: context.models,
+    object,
+  });
+  // Now that we have HTML, turn it into a PDF.
+  const dir = `/AppBox/Files/Objects/${model.key}/${object._id}`;
+  const filename = `${template.data["filename-prefix"]}-${uniqid()}.pdf`;
+  fs.mkdirSync(dir, { recursive: true });
+
+  pdf
+    .create(html, { format: "Letter" })
+    .toFile(`${dir}/${filename}`, (err, res) => {});
+
+  context.models.attachments.model.create({
+    objectId: object._id,
+    path: `${dir}/${filename}`,
+    name: filename,
+  });
 };
