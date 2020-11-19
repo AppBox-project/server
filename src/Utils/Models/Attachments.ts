@@ -9,5 +9,6 @@ mongoose.model(
     objectId: String,
     name: String,
     path: String,
+    type: String,
   })
 );

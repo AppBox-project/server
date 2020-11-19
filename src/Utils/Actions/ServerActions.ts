@@ -74,12 +74,13 @@ export const generateDocument = async (context) => {
     uniqid()
   );
 
-  formula.compile();
+  await formula.compile();
 
   const html = await formula.calculate(object.data, {
     models: context.models,
     object,
   });
+
   // Now that we have HTML, turn it into a PDF.
   const dir = `/AppBox/Files/Objects/${model.key}/${object._id}`;
   const filename = `${template.data["filename-prefix"]}-${uniqid()}.pdf`;
@@ -93,5 +94,6 @@ export const generateDocument = async (context) => {
     objectId: object._id,
     path: `${dir}/${filename}`,
     name: filename,
+    type: "pdf",
   });
 };

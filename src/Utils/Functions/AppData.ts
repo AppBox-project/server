@@ -90,6 +90,13 @@ export default {
         // Create the new object
         const newObject = oldObject.data;
         map(args.newObject, (v, k) => {
+          // If this is supposed to be a number, but isn't, parseInt().
+          if (
+            model.fields[k]?.typeArgs?.type === "number" &&
+            typeof v !== "number"
+          )
+            v = parseInt(v);
+
           newObject[k] = v;
           oldObject.markModified(`data.${k}`);
         });
