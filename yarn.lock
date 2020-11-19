@@ -183,10 +183,10 @@ anymatch@~3.1.1:
     normalize-path "^3.0.0"
     picomatch "^2.0.4"
 
-appbox-formulas@^0.0.34:
-  version "0.0.34"
-  resolved "https://registry.yarnpkg.com/appbox-formulas/-/appbox-formulas-0.0.34.tgz#9dc0032ce9821947703ce5b4131c13060e42e209"
-  integrity sha512-oqNuMLs/e6OpcOo9alMgwoCjL6TQEGWgF1oeG596jB3Hf0O390cFvglHvx00kFZhgQDAYksVJi4GNANfQI9cfg==
+appbox-formulas@^0.0.35:
+  version "0.0.35"
+  resolved "https://registry.yarnpkg.com/appbox-formulas/-/appbox-formulas-0.0.35.tgz#5c75fe4c72e4eed6dab814ed6392b036316b75b7"
+  integrity sha512-6jG5TTyMnYBcgX0q3+hTjaYhRraaJA1452VR4iiRMn81641BOiMdLmsukJdC/DDn25W0QzPo0r+DAYLQtNwCdw==
   dependencies:
     date-fns "^2.16.1"
     lodash "^4.17.20"
