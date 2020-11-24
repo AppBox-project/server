@@ -2,6 +2,7 @@ import { remove, map } from "lodash";
 import Functions from "../Functions";
 import { ModelType, SocketInfoType } from "../Utils/Types";
 var uniqid = require("uniqid");
+import Formula from "appbox-formulas";
 
 // Todo sanitize filter input???
 // --> It may be possible to send something else than arrays which may be a way into the database
@@ -436,9 +437,30 @@ export default [
           const model = await models.models.model.findOne({ key: args.type });
 
           // Add any default values to the new object's model
-          map(model.fields, async (mField, mKey) => {
+          //@ts-ignore
+          await Object.keys(model.fields).reduce(async (prev, mKey) => {
+            await prev;
+            const mField = model.fields[mKey];
+
             if (mField.default && !args.object[mKey]) {
-              args.object[mKey] = mField.default;
+              let defaultValue = mField.default;
+              if (mField.default.match("{{")) {
+                const defaultFormula = new Formula(
+                  mField.default,
+                  model,
+                  models,
+                  name,
+                  uniqid()
+                );
+                await defaultFormula.compile();
+                const object = { __user: socketInfo.user };
+                defaultValue = await defaultFormula.calculate(object, {
+                  models,
+                  object,
+                });
+              }
+
+              console.log(defaultValue);
             }
             if (mField.type === "auto_name") {
               args.object[mKey] = `${mField.typeArgs.prefix}-`;
@@ -450,7 +472,8 @@ export default [
                 });
               }
             }
-          });
+            return mKey;
+          }, Object.keys(model.fields)[0]);
 
           // Validate the model
           Functions.data

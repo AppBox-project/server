@@ -399,17 +399,46 @@ export default {
               })) + 1;
 
             // Add any default values to the new object's model
-            map(model.fields, async (mField, mKey) => {
+            //@ts-ignore
+            await Object.keys(model.fields).reduce(async (prev, mKey) => {
+              await prev;
+              const mField = model.fields[mKey];
+
               if (mField.default && !args.object[mKey]) {
-                // When we have a default value, but no manual has been set.
-                args.object[mKey] = mField.default;
+                let defaultValue = mField.default;
+                if (defaultValue.match("{{")) {
+                  const defaultFormula = new Formula(
+                    mField.default,
+                    model,
+                    models,
+                    uniqid()
+                  );
+                  await defaultFormula.compile();
+                  const object = {
+                    __currentUserId: socketInfo.user._id,
+                    __currentUser: socketInfo.user.data,
+                  };
+                  defaultValue = await defaultFormula.calculate(object, {
+                    models,
+                    object: { data: object },
+                  });
+                }
+
+                args.object[mKey] = defaultValue;
               }
               if (mField.type === "auto_name") {
-                args.object[mKey] = `${mField.typeArgs.prefix}-${
-                  mField.typeArgs.mode === "random" ? uniqueId() : objectCount
-                }`;
+                args.object[mKey] = `${mField.typeArgs.prefix}-`;
+                if (mField.typeArgs.mode === "random") {
+                  args.object[mKey] += uniqid();
+                } else {
+                  args.object[mKey] +=
+                    (await models.objects.model.count({
+                      objectId: args.type,
+                    })) + 1;
+                }
               }
-            });
+              return mKey;
+            }, Object.keys(model.fields)[0]);
 
             // Validate & save
             f.data
