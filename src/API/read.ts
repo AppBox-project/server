@@ -1,4 +1,6 @@
 import { map } from "lodash";
+import { checkPersonToken } from "../Utils/Functions/User";
+import sanitizeString from "../Utils/Functions/SanitizeString";
 import { baseUrl } from "../Utils/Utils/Utils";
 
 // The read API allows you to read and search files
@@ -16,15 +18,51 @@ const executeReadApi = async (models, objectId, req, res, next) => {
       }
     }
     if (!hasApi) {
-      res.send("Api-not-active");
+      res.send(JSON.stringify({ success: false, reason: "api-not-active" }));
     } else {
       let authentication = model.api.read.authentication
         ? model.api.read.authentication
         : "user";
       let authenticated = false;
       if (authentication === "user") {
-        // Todo: authentication
-        res.send("Todo: Authentication");
+        if ((req.body.auth.signInAs || "user") === "person") {
+          // Validate person
+          const person = await models.objects.model.findOne({
+            objectId: "people",
+            "data.email": sanitizeString(req.body.auth.username),
+          });
+          if (person) {
+            if (checkPersonToken(person, req.body.auth.token)) {
+              authenticated = true;
+            } else {
+              // Wrong password
+              res.send(
+                JSON.stringify({
+                  success: false,
+                  reason: "sign-in-failed",
+                })
+              );
+            }
+          } else {
+            // No such user
+            res.send(
+              JSON.stringify({
+                success: false,
+                reason: "sign-in-failed",
+              })
+            );
+          }
+        } else {
+          // Todo: validate user
+          // For now just block.
+          res.send(
+            JSON.stringify({
+              success: false,
+              reason: "not-implemented",
+              description: "API doesn't accept user sign in yets. Only person.",
+            })
+          );
+        }
       } else {
         authenticated = true;
       }
@@ -86,21 +124,4 @@ const executeReadApi = async (models, objectId, req, res, next) => {
   }
 };
 
-const executeStandaloneApi = async (models, objectId, req, res, next) => {
-  res.send(
-    JSON.stringify({
-      app_name: "Support portal",
-      requireSignIn: true,
-      allowPeople: true,
-      allowPeopleWithTypes: "Support",
-      configVersion: 2,
-      color: { r: 0, g: 163, b: 123 },
-      login: {
-        background:
-          "https://images.pexels.com/photos/5453837/pexels-photo-5453837.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260",
-      },
-    })
-  );
-};
-
-export { executeReadApi, executeStandaloneApi };
+export default executeReadApi;

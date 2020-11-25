@@ -3,7 +3,6 @@ import config from "./config";
 var mongoose = require("mongoose");
 import actions from "./Utils/Actions";
 import { map } from "lodash";
-import { executeReadApi, executeStandaloneApi } from "./API";
 var cors = require("cors");
 const formidableMiddleware = require("express-formidable");
 import f from "./Utils/Functions";
@@ -12,6 +11,10 @@ import { initServer } from "./Utils/Actions/General";
 import { createIndex } from "./Utils/Utils/Index";
 import { systemLog } from "./Utils/Utils/Utils";
 import Axios from "axios";
+import executeReadApi from "./API/read";
+import executeStandaloneApi from "./API/standalone";
+import executeSignInApi from "./API/signIn";
+const bodyParser = require("body-parser");
 
 // Models
 require("./Utils/Models/Models");
@@ -20,6 +23,7 @@ require("./Utils/Models/Objects");
 require("./Utils/Models/AppPermissions");
 require("./Utils/Models/Attachments");
 require("./Utils/Models/UserSettings");
+require("./Utils/Models/AppSettings");
 
 // Start up server
 const app = express();
@@ -75,6 +79,7 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
           stream: db.collection("usersettings").watch(),
           listeners: {},
         },
+        appsettings: { model: mongoose.model("AppSettings") },
       };
 
       // Change streams
@@ -129,13 +134,19 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
       app.use("/object-storage", express.static("../../Files/Objects"));
 
       // Api
-      app.use("/api/:objectId/:apiId/:optional", cors(), (req, res, next) => {
+      app.use(bodyParser.urlencoded({ extended: true }));
+      app.use(bodyParser.json());
+      app.use(bodyParser.raw());
+      app.use("/api/:objectId/:apiId/:optional?", cors(), (req, res, next) => {
         switch (req.params.apiId) {
           case "read":
             executeReadApi(models, req.params.objectId, req, res, next);
             break;
           case "standalone":
             executeStandaloneApi(models, req.params.objectId, req, res, next);
+            break;
+          case "signIn":
+            executeSignInApi(models, req.params.objectId, req, res, next);
             break;
           default:
             res.send("Unknown API ID");
