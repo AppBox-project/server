@@ -3,7 +3,7 @@ import config from "./config";
 var mongoose = require("mongoose");
 import actions from "./Utils/Actions";
 import { map } from "lodash";
-import { executeReadApi } from "./API";
+import { executeReadApi, executeStandaloneApi } from "./API";
 var cors = require("cors");
 const formidableMiddleware = require("express-formidable");
 import f from "./Utils/Functions";
@@ -129,10 +129,13 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
       app.use("/object-storage", express.static("../../Files/Objects"));
 
       // Api
-      app.use("/api/:objectId/:apiId", cors(), (req, res, next) => {
+      app.use("/api/:objectId/:apiId/:optional", cors(), (req, res, next) => {
         switch (req.params.apiId) {
           case "read":
             executeReadApi(models, req.params.objectId, req, res, next);
+            break;
+          case "standalone":
+            executeStandaloneApi(models, req.params.objectId, req, res, next);
             break;
           default:
             res.send("Unknown API ID");
@@ -266,7 +269,7 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
     });
   })
   .catch((err) => {
-    console.log(`No database found. Showing set-up instructions.`,err);
+    console.log(`No database found. Showing set-up instructions.`, err);
     app.get("/", function (req, res) {
       res.send("Hello World!");
     });

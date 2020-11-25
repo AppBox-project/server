@@ -85,4 +85,22 @@ const executeReadApi = async (models, objectId, req, res, next) => {
     }
   }
 };
-export { executeReadApi };
+
+const executeStandaloneApi = async (models, objectId, req, res, next) => {
+  res.send(
+    JSON.stringify({
+      app_name: "Support portal",
+      requireSignIn: true,
+      allowPeople: true,
+      allowPeopleWithTypes: "Support",
+      configVersion: 2,
+      color: { r: 0, g: 163, b: 123 },
+      login: {
+        background:
+          "https://images.pexels.com/photos/5453837/pexels-photo-5453837.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260",
+      },
+    })
+  );
+};
+
+export { executeReadApi, executeStandaloneApi };
