@@ -183,6 +183,15 @@ anymatch@~3.1.1:
     normalize-path "^3.0.0"
     picomatch "^2.0.4"
 
+appbox-formulas@^0.0.37:
+  version "0.0.37"
+  resolved "https://registry.yarnpkg.com/appbox-formulas/-/appbox-formulas-0.0.37.tgz#bf1b6e9a800bc4eeb39ac87ba0853d4cc1aee45a"
+  integrity sha512-H80/rFxWVhb71gdsERXf/3ed1ZvJeE0ejqwTfoulc+ri0z4IvEXaSMn8iG00KEXiVTFDww0pQOlRQtWAKqw/Jw==
+  dependencies:
+    date-fns "^2.16.1"
+    lodash "^4.17.20"
+    uniqid "^5.2.0"
+
 appbox-types@^0.0.7:
   version "0.0.7"
   resolved "https://registry.yarnpkg.com/appbox-types/-/appbox-types-0.0.7.tgz#df505d76ad10e02d53f1e744daf10f240f4fb4ce"
@@ -634,7 +643,7 @@ dashdash@^1.12.0:
   dependencies:
     assert-plus "^1.0.0"
 
-date-fns@^2.0.1:
+date-fns@^2.0.1, date-fns@^2.16.1:
   version "2.16.1"
   resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.16.1.tgz#05775792c3f3331da812af253e1a935851d3834b"
   integrity sha512-sAJVKx/FqrLYHAQeN7VpJrPhagZc9R4ImZIWYRFZaaohR3KzmuK88touwsSwSVT8Qcbd4zoDsnGfX4GFB4imyQ==
