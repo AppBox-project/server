@@ -16,7 +16,7 @@ const validateNewObject = async (models, newObject, oldObject) => {
   const fieldPromises = [];
   map(model.fields, async (field, fieldId) => {
     fieldPromises.push(
-      new Promise((fieldPromiseResolve, fieldPromiseReject) => {
+      new Promise<void>((fieldPromiseResolve, fieldPromiseReject) => {
         // Step 1: required fields
         if (field.required) {
           // Check if the object has a value
@@ -26,7 +26,7 @@ const validateNewObject = async (models, newObject, oldObject) => {
         }
 
         // Step 2: unique fields
-        const uniquePromise = new Promise(
+        const uniquePromise = new Promise<void>(
           async (uniquePromiseResolve, uniquePromiseReject) => {
             if (field.unique) {
               const sk = `data.${fieldId}`;
@@ -94,15 +94,15 @@ export default {
   // validateData()
   // --> Loop through the fields for a model and validate piece by piece
   validateData: (data, object, type, models, oldObject) => {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       const errors = [];
       const fieldChecks = [];
 
       map(data.fields, (field, k) => {
         fieldChecks.push(
-          new Promise((resolve, reject) => {
+          new Promise<void>((resolve, reject) => {
             const parts = [
-              new Promise((subresolve, reject) => {
+              new Promise<void>((subresolve, reject) => {
                 // Check 1
                 if (field.required) {
                   if (!object[k]) {
@@ -111,7 +111,7 @@ export default {
                 }
                 subresolve();
               }),
-              new Promise((subresolve, reject) => {
+              new Promise<void>((subresolve, reject) => {
                 // Check 2
                 if (field.unique) {
                   const sk = "data." + k;
@@ -137,7 +137,7 @@ export default {
                   subresolve();
                 }
               }),
-              new Promise((subresolve, reject) => {
+              new Promise<void>((subresolve, reject) => {
                 // Check 3
                 if (field.validations) {
                   if (object[k]) {
@@ -208,7 +208,7 @@ export default {
   updateManyObjects: async (models, id, changes) => {
     // This is a weird version of the function I created for updateMany. Todo: merge with main updateObject
     // Todo: this may require a permissions check (see older functions)
-    return new Promise(async (resolve, reject) => {
+    return new Promise<void>(async (resolve, reject) => {
       const oldObject = await models.objects.model.findOne({ _id: id });
       let newObject = oldObject;
       map(changes, (value, fieldId) => {

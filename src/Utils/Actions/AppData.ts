@@ -232,7 +232,7 @@ export default [
               // Then map permissions for the user
               if (appPermission.permissions.includes("read")) {
                 promises.push(
-                  new Promise((resolve, reject) => {
+                  new Promise<void>((resolve, reject) => {
                     models.models.model
                       .findOne({ appId: args.appId, ...args.filter })
                       .then((type) => {
@@ -541,7 +541,7 @@ export default [
           const promises = [];
           args.objects.map((obj) =>
             promises.push(
-              new Promise((resolve, reject) => {
+              new Promise<void>((resolve, reject) => {
                 let newObject = obj;
                 // Add any default values to the new object's model
                 map(model.fields, (mField, mKey) => {
