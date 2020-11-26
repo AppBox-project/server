@@ -74,7 +74,7 @@ const executeReadApi = async (models, objectId, req, res, next) => {
           map(req.query, (value, key) => {
             if (key !== "baseUrl" && key != "addToEachObject") {
               // Skip these reserved values
-              requirements[`data.${key}`] = value;
+              requirements[key === "_id" ? "_id" : `data.${key}`] = value;
             }
           });
           objects = await models.objects.model.find({
