@@ -38,6 +38,13 @@ systemLog(
   }`
 );
 
+app.use((req, res, next) => {
+  const test = /\?[^]*\//.test(req.url);
+  if (req.url.substr(-1) === "/" && req.url.length > 1 && !test)
+    res.redirect(301, req.url.slice(0, -1));
+  else next();
+});
+
 Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
   .then((res) => {
     mongoose.connect(
