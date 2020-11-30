@@ -10,10 +10,8 @@ const executeStandaloneApi = async (models, objectId, req, res, next) => {
   });
 
   if (config) {
-    console.log(config.value.secret, secret);
-
     if (config.value.secret === secret) {
-      res.send(JSON.stringify(config));
+      res.send(JSON.stringify(config.value));
     } else {
       res.send(
         JSON.stringify({
