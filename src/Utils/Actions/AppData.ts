@@ -3,6 +3,7 @@ import Functions from "../Functions";
 import { ModelType, SocketInfoType } from "../Utils/Types";
 var uniqid = require("uniqid");
 import Formula from "appbox-formulas";
+import { getDefaultFormatCodeSettings } from "typescript";
 
 // Todo sanitize filter input???
 // --> It may be possible to send something else than arrays which may be a way into the database
@@ -289,7 +290,6 @@ export default [
       });
       if (appInfo?.data?.root || args.appId === "system") {
         // Root mode
-
         // Skip app permission check
         models.models.model.findOne({ key: args.type }).then((objectType) => {
           if (objectType) {
@@ -725,6 +725,29 @@ export default [
           reason: "no-archive-permission-app",
         });
       }
+    },
+  },
+  {
+    key: "getAppSettings",
+    action: async (args, models, socket, socketInfo: SocketInfoType) => {
+      const setting = await models.appsettings.model.findOne({
+        key: args.key,
+        appKey: args.appId,
+      });
+      socket.emit(`receive-${args.requestId}`, setting.value);
+    },
+  },
+  {
+    key: "setAppSettings",
+    action: async (args, models, socket, socketInfo: SocketInfoType) => {
+      const setting = await models.appsettings.model.findOne({
+        key: args.key,
+        appKey: args.appId,
+      });
+      setting.value = args.value;
+      setting.markModified("value");
+      setting.save();
+      socket.emit(`receive-${args.requestId}`, { success: true });
     },
   },
 ];
