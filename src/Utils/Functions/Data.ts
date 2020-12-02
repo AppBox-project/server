@@ -1,7 +1,6 @@
 import { map, uniqueId } from "lodash";
 import f from "../Functions";
 import { AppModelType } from "appbox-types";
-import { systemLog } from "../Utils/Utils";
 import { ModelRuleType } from "../Utils/Types";
 import Formula from "appbox-formulas";
 const uniqid = require("uniqid");
@@ -76,7 +75,7 @@ const transformData = (data, model, changed) => {
               data.data[k] = f.user.hashString(data.data[k]);
               break;
             default:
-              systemLog(
+              console.log(
                 `Unknown transformation ${transformation} not applied.`
               );
 
@@ -175,7 +174,9 @@ export default {
                           }
                           break;
                         default:
-                          systemLog(`Error! Unknown validation ${validation}.`);
+                          console.log(
+                            `Error! Unknown validation ${validation}.`
+                          );
 
                           break;
                       }

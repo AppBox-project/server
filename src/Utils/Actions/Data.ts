@@ -1,6 +1,5 @@
 import { remove, map, pull } from "lodash";
 import f from "../Functions";
-import { systemLog } from "../Utils/Utils";
 
 // Todo sanitize filter input???
 // --> It may be possible to send something else than arrays which may be a way into the database
@@ -255,7 +254,7 @@ export default [
     // --> Cleans up listeners for object
     key: "stopGettingUserSetting",
     action: (args, models, socket, socketInfo) => {
-      systemLog(`Cleaning up usersetting request ${args.requestId}`);
+      console.log(`Cleaning up usersetting request ${args.requestId}`);
       delete models.usersettings.listeners[args.requestId];
       remove(socketInfo.listeners, (o) => {
         return o === args.requestId;

@@ -1,5 +1,4 @@
 import { filter, find, findIndex, map } from "lodash";
-import { systemLog } from "./Utils";
 
 /*
  * This file keeps an internal index (in memory) of the models (usable all throughout the server) and objects (usable for search).
@@ -51,10 +50,10 @@ const updateModelIndex = (change) => {
         searchableIndex = filter(entriesIndex, (o) => o.type !== oldModel.key);
         if (oldModel.indexed) {
           // If they require to be indexed, re-index
-          systemLog(`Re-indexing ${oldModel.name_plural}`);
+          console.log(`Re-indexing ${oldModel.name_plural}`);
           updateModelObjectIndex(oldModel);
         } else {
-          systemLog(`${oldModel.name_plural} were removed from the index.`);
+          console.log(`${oldModel.name_plural} were removed from the index.`);
         }
       }
     }
@@ -78,7 +77,7 @@ const updateModelIndex = (change) => {
         searchableIndex = filter(entriesIndex, (o) => o.type !== newModel.key);
         if (newModel.indexed) {
           // If they require to be indexed, re-index
-          systemLog(`Re-indexing ${newModel.name_plural}`);
+          console.log(`Re-indexing ${newModel.name_plural}`);
 
           updateModelObjectIndex(newModel);
         }
@@ -99,13 +98,13 @@ const updateObjectIndex = async (change, models) => {
     if (oldObjectIndex) {
       if (oldObjectIndex > -1) {
         searchableIndex.splice(oldObjectIndex, 1);
-        systemLog(`Deletion: removed item #${oldObjectIndex} from index`);
+        console.log(`Deletion: removed item #${oldObjectIndex} from index`);
       }
     }
   } else if (change.operationType === "update") {
     // Update operation (by UI)
     // Replace old object by new object in the index
-    systemLog(
+    console.log(
       `Object changed. Re-indexing: ${change.documentKey._id.toString()}`
     );
     let newObject = await models.objects.model.find({
@@ -131,7 +130,7 @@ const updateObjectIndex = async (change, models) => {
     io["keywords"] = keyword;
     searchableIndex[oldObjectIndex] = io;
   } else if (change.operationType === "replace") {
-    systemLog("Change, rebuilding index.");
+    console.log("Change, rebuilding index.");
 
     // Replace operation (by database)
     const newObject = change.fullDocument;
@@ -154,7 +153,7 @@ const updateObjectIndex = async (change, models) => {
     io["keywords"] = keyword;
     searchableIndex[oldObjectIndex] = io;
   } else if (change.operationType === "insert") {
-    systemLog("Insertion, indexing.");
+    console.log("Insertion, indexing.");
 
     // Replace operation (by database)
     const newObject = change.fullDocument;

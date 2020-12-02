@@ -7,14 +7,13 @@ var cors = require("cors");
 const formidableMiddleware = require("express-formidable");
 import f from "./Utils/Functions";
 const fs = require("fs");
-import { initServer } from "./Utils/Actions/General";
 import { createIndex } from "./Utils/Utils/Index";
-import { systemLog } from "./Utils/Utils/Utils";
 import Axios from "axios";
 import executeReadApi from "./API/read";
 import executeStandaloneApi from "./API/standalone";
 import executeSignInApi from "./API/signIn";
 const bodyParser = require("body-parser");
+const YAML = require("yaml");
 
 // Models
 require("./Utils/Models/Models");
@@ -24,6 +23,7 @@ require("./Utils/Models/AppPermissions");
 require("./Utils/Models/Attachments");
 require("./Utils/Models/UserSettings");
 require("./Utils/Models/AppSettings");
+require("./Utils/Models/SystemSettings");
 
 // Start up server
 const app = express();
@@ -32,7 +32,7 @@ app.set("port", config.port);
 let http = require("http").Server(app);
 let io = require("socket.io")(http);
 
-systemLog(
+console.log(
   `Trying to connect to the database at ${
     process.env.DBURL || "localhost:27017"
   }`
@@ -88,6 +88,7 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
           listeners: {},
         },
         appsettings: { model: mongoose.model("AppSettings") },
+        systemsettings: mongoose.model("SystemSettings"),
       };
 
       // Change streams
@@ -116,12 +117,19 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
         });
       });
 
-      systemLog("Connected to database and loaded models.");
+      console.log("Connected to database and loaded models.");
 
       const initialModels = await models.models.model.find();
       let initialised = true;
+      const isConfigured = await models.systemsettings.findOne({
+        key: "onboarded",
+      });
       if (initialModels.length < 1) {
-        systemLog("Database is still empty, client should show onboarding");
+        console.log("Database is empty. Inserting basic data.");
+        insertDefaultData(models);
+      }
+      if (!isConfigured) {
+        console.log("Configuration incomplete. Showing onboarding.");
         initialised = false;
       }
 
@@ -230,7 +238,7 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
       app.use("/*", express.static("../Client/build"));
 
       http.listen(config.port, () => {
-        systemLog(`Server now available at http://localhost:${config.port}`);
+        console.log(`Server now available at http://localhost:${config.port}`);
 
         // Client interaction
         io.on("connection", (socket: any) => {
@@ -241,19 +249,12 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
             user: undefined,
             identified: false,
           };
-          systemLog(
+          console.log(
             `New socket connection from ${socket.request.connection.remoteAddress}`
           );
 
           if (!initialised) {
             socket.emit("noInit");
-            socket.on("initServer", (args) => {
-              if (!initialised)
-                initServer(args, models, socket, socketInfo, () => {
-                  console.log("Initialisation is done");
-                  initialised = true;
-                });
-            });
           } else {
             actions.map((action) => {
               // Perform action
@@ -272,7 +273,7 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
 
             socket.on("disconnect", () => {
               if ((socketInfo?.listeners || []).length > 0) {
-                systemLog(
+                console.log(
                   `${socketInfo.username} closed their socket. Cleaning up ${socketInfo.listeners.length} listeners.`
                 );
 
@@ -293,3 +294,19 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
       res.send("Hello World!");
     });
   });
+
+const insertDefaultData = async (models) => {
+  console.log("Inserting default data");
+  const newModels = YAML.parse(
+    await fs.readFileSync("/AppBox/System/Server/src/Data/Models.yml", "utf8")
+  );
+  const newObjects = YAML.parse(
+    await fs.readFileSync("/AppBox/System/Server/src/Data/Objects.yml", "utf8")
+  );
+  newObjects.map((o, index) => {
+    newObjects[index]._id = mongoose.Types.ObjectId(o._id.$oid);
+  });
+
+  models.models.model.insertMany(newModels);
+  models.objects.model.insertMany(newObjects);
+};

@@ -1,0 +1,2148 @@
+- key: users
+  name: User
+  primary: username
+  name_plural: Users
+  indexed: true
+  indexed_fields: full_name
+  permissions:
+    read:
+      - known
+    create:
+      - admin
+    modifyOwn:
+      - known
+    write:
+      - known
+    delete:
+      - admin
+    deleteOwn:
+      - known
+    archive: []
+    archiveOwn: []
+
+  fields:
+    username:
+      name: Username
+      required: true
+      unique: true
+      type: input
+    password:
+      name: Password
+      required: true
+      type: input
+      typeArgs:
+        type: password
+      transformations:
+        - hash
+    email:
+      name: Email
+      type: input
+      typeArgs:
+        type: email
+      required: true
+      unique: true
+      validations:
+        - isEmail
+    first_name:
+      name: First name
+      type: formula
+      required: false
+      typeArgs:
+        formula: "{{ person_r.first_name }}"
+        type: text
+        dependencies:
+          - person_r.first_name
+      dependencyFor:
+        - full_name
+    last_name:
+      name: Last name
+      type: formula
+      required: false
+      typeArgs:
+        formula: "{{ person_r.last_name }}"
+        dependencies:
+          - person_r.last_name
+        type: text
+    full_name:
+      name: Full name
+      type: formula
+      typeArgs:
+        formula: "{{ first_name }} {{ last_name }}"
+        dependencies:
+          - person_r.first_name
+          - person_r.last_name
+        type: text
+    picture:
+      name: Picture
+      type: formula
+      typeArgs:
+        formula: "{{ person_r.picture }}"
+        dependencies:
+          - person_r.picture
+        type: picture
+    roles:
+      name: Roles
+      type: relationship_m
+      typeArgs:
+        relationshipTo: roles
+    person:
+      name: Person
+      type: relationship
+      typeArgs:
+        relationshipTo: people
+      required: true
+      unique: true
+      dependencyFor:
+        - user.full_name
+        - user.last_name
+        - user.first_name
+        - user.picture
+    mfa_enabled:
+      name: 2FA enabled
+      type: boolean
+      readonly: true
+      typeArgs:
+        readonly: true
+    mfa_secret:
+      name: 2FA secret
+      type: input
+      readonly: true
+      typeArgs:
+        readonly: true
+      conditions:
+        conditions:
+          - field: mfa_enabled
+            operator: equals
+            value: true
+    mfa_qr:
+      name: 2FA QR
+      type: qr
+      readonly: true
+      typeArgs:
+        readonly: true
+        type: text
+      conditions:
+        conditions:
+          - field: mfa_enabled
+            operator: equals
+            value: true
+    banner:
+      name: Banner
+      type: picture
+      typeArgs:
+        asBanner: true
+  actions:
+    create:
+      layout: create
+      type: create
+  overviews:
+    default:
+      fields:
+        - username
+        - full_name
+        - email
+        - roles
+      buttons:
+        - create
+      actions:
+        - delete
+  layouts:
+    create:
+      layout:
+        - type: Field
+          xs: 12
+          id: ka8gkjo5
+          key: create
+          field: username
+        - type: Field
+          xs: 12
+          id: ka8gonck
+          key: create
+          field: password
+        - type: Field
+          xs: 12
+          id: ka8god8m
+          key: create
+          field: email
+        - type: Field
+          xs: 12
+          id: ka8gortq
+          key: create
+          field: first_name
+        - type: Field
+          xs: 12
+          id: ka8gosjn
+          key: create
+          field: last_name
+        - type: Field
+          xs: 12
+          id: kajp4b1p
+          key: roles
+          name: Roles
+          field: roles
+        - type: Field
+          xs: 12
+          id: kcrrf1a8
+          field: person
+    default:
+      layout:
+        - type: AnimationContainer
+          xs: 12
+          id: ka9m7kuo
+          items:
+            - type: GridContainer
+              xs: 12
+              id: ka9m7ont
+              items:
+                - type: GridItem
+                  xs: 12
+                  id: ka9m7ziv
+                  md: 9
+                  items:
+                    - type: AnimationItem
+                      xs: 12
+                      id: ka9m8hmc
+                      items:
+                        - type: Paper
+                          xs: 12
+                          id: ka9m8q1g
+                          items:
+                            - type: Field
+                              xs: 12
+                              id: ka9m8x6j
+                              md: 3
+                              field: username
+                            - type: Field
+                              xs: 12
+                              id: ka9m9490
+                              md: 3
+                              field: email
+                            - type: Field
+                              xs: 12
+                              id: ka9m978n
+                              md: 3
+                              field: password
+                            - type: GridContainer
+                              xs: 12
+                              id: ked1tmrq
+                              items:
+                                - type: GridItem
+                                  xs: 6
+                                  id: ked1tq6r
+                                  items:
+                                    - type: Field
+                                      xs: 12
+                                      id: ka9m9oes
+                                      md: 3
+                                      field: first_name
+                                - type: GridItem
+                                  xs: 6
+                                  id: ked1trqd
+                                  items:
+                                    - type: Field
+                                      xs: 12
+                                      id: ka9m9qsg
+                                      md: 3
+                                      field: last_name
+                          title: About user
+                          withMargin: false
+                          withSmallMargin: false
+                          sideMargin: true
+                          oneSideMargin: true
+                          hoverable: false
+                          withBigMargin: true
+                          sideMarginOnly: false
+                - type: GridItem
+                  xs: 12
+                  id: ka9m8290
+                  md: 3
+                  items:
+                    - type: AnimationItem
+                      xs: 12
+                      id: ka9m8kqi
+                      items:
+                        - type: Paper
+                          xs: 12
+                          id: ka9m8to1
+                          items:
+                            - type: Field
+                              xs: 12
+                              id: ka9m9zre
+                              md: 3
+                              field: person
+                          title: Info
+                          withMargin: false
+                          withSmallMargin: false
+                          sideMargin: true
+                          oneSideMargin: true
+                          hoverable: false
+                          withBigMargin: true
+                          sideMarginOnly: false
+                - type: GridItem
+                  xs: 12
+                  id: kcnon8zp
+                  items:
+                    - type: AnimationItem
+                      xs: 12
+                      id: kcnoncuz
+                      items:
+                        - type: Paper
+                          xs: 12
+                          id: kcnong21
+                          title: Permissions
+                          items:
+                            - type: Field
+                              xs: 12
+                              id: kcnonrxp
+                              field: roles
+                              title: Permissions
+                          withMargin: false
+                          withSmallMargin: false
+                          sideMargin: true
+                          oneSideMargin: true
+                          hoverable: false
+                          withBigMargin: true
+                          sideMarginOnly: false
+      buttons:
+        - clone
+        - archive
+      factsBar:
+        - picture
+        - full_name
+        - username
+        - email
+    system:
+      layout:
+        - type: TabContainer
+          xs: 12
+          id: kf1htq1w
+          identifier: page
+          field: username
+          hideView: false
+          md: 9
+          items:
+            - type: TabItem
+              xs: 12
+              id: kf1htw1d
+              title: Information
+              identifier: info
+              field: username
+              hideView: false
+              md: 9
+              items:
+                - type: AnimationContainer
+                  xs: 12
+                  id: kf1hugpt
+                  items:
+                    - type: GridContainer
+                      xs: 12
+                      id: kf1huq75
+                      items:
+                        - type: GridItem
+                          xs: 12
+                          id: kf1huyo9
+                          items:
+                            - type: AnimationItem
+                              xs: 12
+                              id: kf1hvgfx
+                              items:
+                                - type: FactsBar
+                                  xs: 12
+                                  id: kf1hvkf1
+                        - type: GridItem
+                          xs: 12
+                          id: kf1hw44g
+                          md: 9
+                          field: username
+                          hideView: false
+                          identifier: settings
+                          title: Settings
+                          items:
+                            - type: AnimationItem
+                              xs: 12
+                              id: kf1hwdgk
+                              items:
+                                - type: Paper
+                                  xs: 12
+                                  id: kf1hwfi0
+                                  title: Information
+                                  withBigMargin: true
+                                  hideView: false
+                                  field: username
+                                  md: 3
+                                  identifier: settings
+                                  items:
+                                    - type: Field
+                                      xs: 12
+                                      id: kf1hzo8i
+                                      field: username
+                                      hideView: false
+                                      noLabel: false
+                                      md: 3
+                                      identifier: settings
+                                      title: Settings
+                                      withBigMargin: true
+                                    - type: Field
+                                      xs: 12
+                                      id: kf1hztzj
+                                      field: password
+                                      hideView: false
+                                      noLabel: false
+                                      md: 3
+                                      identifier: settings
+                                      title: Settings
+                                      withBigMargin: true
+                                    - type: Field
+                                      xs: 12
+                                      id: kf1hzzi4
+                                      field: email
+                                      hideView: false
+                                      noLabel: false
+                                      md: 3
+                                      identifier: settings
+                                      title: Settings
+                                      withBigMargin: true
+                                    - type: Field
+                                      xs: 12
+                                      id: kf1i0f5j
+                                      field: person
+                                      hideView: false
+                                      noLabel: false
+                                      md: 3
+                                      identifier: settings
+                                      title: Settings
+                                      withBigMargin: true
+                                    - type: Field
+                                      xs: 12
+                                      id: kfzj5ddf
+                                      field: banner
+                                      hideView: true
+                        - type: GridItem
+                          xs: 12
+                          id: kf1hwuoy
+                          md: 3
+                          field: username
+                          hideView: false
+                          identifier: settings
+                          title: Settings
+                          withBigMargin: true
+                          items:
+                            - type: AnimationItem
+                              xs: 12
+                              id: kf1hxchu
+                              items:
+                                - type: Paper
+                                  xs: 12
+                                  id: kf1hxg9z
+                                  title: 2FA
+                                  withBigMargin: true
+                                  field: username
+                                  md: 3
+                                  identifier: settings
+                                  items:
+                                    - type: Field
+                                      xs: 12
+                                      id: kf1hz8ja
+                                      field: mfa_qr
+                                      hideView: false
+                                      noLabel: true
+                                      md: 3
+                                      identifier: settings
+                                      title: Settings
+                                      withBigMargin: true
+                                      hideEdit: false
+            - type: TabItem
+              xs: 12
+              id: kf1htyuz
+              title: Settings
+              identifier: settings
+              field: username
+              hideView: false
+              md: 9
+              items:
+                - type: AnimationContainer
+                  xs: 12
+                  id: kf1hulnr
+                  items:
+                    - type: AnimationItem
+                      xs: 12
+                      id: kf1hyl1c
+                      items:
+                        - type: Paper
+                          xs: 12
+                          id: kf1hynnm
+                          title: Settings
+                          withBigMargin: true
+                          hideView: false
+                          field: username
+                          md: 3
+                          identifier: settings
+      buttons:
+        - 2fa-configure
+      factsBar:
+        - picture
+        - full_name
+        - username
+        - roles
+        - person
+  icon: FaUsers
+  app: System
+  api:
+    read:
+      "0": read
+      active: true
+  preview:
+    fields:
+      - full_name
+      - email
+      - person
+    icon: picture
+    picture: picture
+    enabled: true
+  extensions:
+    2fa:
+      name: 2FA
+      app_name: AppBox
+      2fa_enabled_field: mfa_enabled
+      2fa_secret_field: mfa_secret
+      2fa_qr_field: mfa_qr
+      username_field: first_name
+      active: true
+- key: people
+  name: Person
+  name_plural: People
+  permissions:
+    read:
+      - known
+    create:
+      - known
+    modifyOwn:
+      - known
+    write:
+      - known
+    delete:
+      - known
+    deleteOwn:
+      - known
+    archive: []
+    archiveOwn: []
+
+  icon: FaUserFriends
+  primary: full_name
+  fields:
+    first_name:
+      name: First name
+      required: true
+      type: input
+      dependencyFor:
+        - full_name
+        - user.full_name
+    last_name:
+      name: Last name
+      type: input
+      dependencyFor:
+        - full_name
+        - user.full_name
+        - user.last_name
+    full_name:
+      name: Full name
+      type: formula
+      typeArgs:
+        formula: "{{ first_name }} {{ last_name }} "
+        dependencies:
+          - first_name
+          - last_name
+        type: text
+      dependencyFor:
+        - user.full_name
+    gender:
+      name: Gender
+      type: options
+      typeArgs:
+        options:
+          - label: Male
+            key: Male
+          - label: Female
+            key: Female
+          - label: Unknown
+            key: Unknown
+          - label: Other
+            key: Other
+      default: Male
+    picture:
+      name: Picture
+      type: picture
+      dependencyFor:
+        - user.picture
+    address:
+      name: Address
+      type: address
+    email:
+      name: E-mail
+      unique: false
+      type: input
+      typeArgs:
+        type: email
+      validations:
+        - isEmail
+    phone:
+      name: Phone
+      type: input
+      typeArgs:
+        type: phone
+    birthday:
+      name: Birthday
+      type: date
+    age:
+      name: Age
+      type: formula
+      typeArgs:
+        formula: "{{ differenceInYears(__TODAY, birthday) }}"
+        type: number
+    notes:
+      name: Notes
+      type: richtext
+    types:
+      name: Types
+      type: options
+      typeArgs:
+        display: multi-dropdown
+        options:
+          - label: Contact
+            key: Contact
+          - label: Employee
+            key: Employee
+          - label: Customer
+            key: customer
+          - label: Supplier
+            key: supplier
+          - label: Support
+            key: Support
+      default: Contact
+    password:
+      name: Password
+      transformations:
+        - hash
+      type: input
+      typeArgs:
+        type: password
+  actions:
+    create:
+      layout: create
+      type: create
+  overviews:
+    default:
+      fields:
+        - picture
+        - full_name
+        - gender
+        - age
+        - email
+        - types
+      buttons:
+        - create
+      actions:
+        - delete
+  layouts:
+    default:
+      layout:
+        - type: GridContainer
+          xs: 12
+          id: kaczd1rw
+          items:
+            - type: GridItem
+              xs: 12
+              id: kaczd4j9
+              items:
+                - type: AnimationItem
+                  xs: 12
+                  id: kaczd9m6
+                  items:
+                    - type: Paper
+                      xs: 6
+                      id: kaczdtgt
+                      items:
+                        - type: GridContainer
+                          xs: 12
+                          id: kdd8xhz4
+                          items:
+                            - type: GridItem
+                              xs: 6
+                              id: kdd8xk5b
+                              items:
+                                - type: Field
+                                  xs: 12
+                                  id: kaczestn
+                                  key: picture
+                                  name: Picture
+                                  field: first_name
+                                  newOptions: Male,Female,Unknown,Other
+                                  md: 3
+                            - type: GridItem
+                              xs: 6
+                              id: kdd8xw1o
+                              items:
+                                - type: Field
+                                  xs: 12
+                                  id: kaczeuun
+                                  key: picture
+                                  name: Picture
+                                  field: last_name
+                                  newOptions: Male,Female,Unknown,Other
+                                  md: 3
+                        - type: Field
+                          xs: 12
+                          id: kaczeww7
+                          key: picture
+                          name: Picture
+                          field: gender
+                          newOptions: Male,Female,Unknown,Other
+                          md: 3
+                        - type: Field
+                          xs: 12
+                          id: ke8n1ied
+                          field: notes
+                          name: Notes
+                          key: notes
+                        - type: Field
+                          xs: 12
+                          id: khc33jax
+                          field: types
+                          newOptions: Contact
+                          layout:
+                            - id: kdbnohud
+                              name: New person
+                              columns: 2
+                              showTitle: true
+                              defaultExpanded: true
+                              items:
+                                - first_name
+                                - last_name
+                                - gender
+                                - birthday
+                            - id: kdbnouip
+                              name: Contact
+                              columns: 1
+                              showTitle: true
+                              defaultExpanded: true
+                              items:
+                                - address
+                                - phone
+                                - email
+                            - id: khc32zrq
+                              name: Other
+                              columns: 1
+                              showTitle: true
+                              defaultExpanded: false
+                              items:
+                                - types
+                                - notes
+                        - type: Field
+                          id: khxfdp4e
+                          field: password
+                          key: password
+                          name: Password
+                      title: About the person
+                      field: permission___view
+                      withMargin: true
+                      hoverable: false
+                      withBigMargin: true
+                      withSmallMargin: false
+                      sideMarginOnly: false
+              key: picture
+              name: Picture
+              field: gender
+              newOptions: Male,Female,Unknown,Other
+              md: 9
+            - type: GridItem
+              xs: 12
+              id: kaczd644
+              items:
+                - type: AnimationItem
+                  xs: 12
+                  id: kaczdca8
+                  items:
+                    - type: Paper
+                      xs: 6
+                      id: kaczdwr0
+                      items:
+                        - type: Field
+                          xs: 12
+                          id: kaczkklv
+                          key: picture
+                          name: Picture
+                          field: picture
+                          newOptions: Male,Female,Unknown,Other
+                          md: 3
+                        - type: Field
+                          xs: 12
+                          id: kb5a5gcb
+                          key: phone
+                          name: Phone
+                          field: phone
+                          hideView: true
+                        - type: Field
+                          xs: 12
+                          id: kb3p979v
+                          key: address
+                          name: Address
+                          field: address
+                          hideView: true
+                        - type: Field
+                          xs: 12
+                          id: kcth82xn
+                          field: birthday
+                        - type: Field
+                          xs: 12
+                          id: kb5a5ew6
+                          key: phone
+                          name: Phone
+                          field: email
+                          hideView: true
+                      title: Further details
+                      field: permission___view
+                      withMargin: true
+                      hoverable: false
+                      withBigMargin: true
+                      withSmallMargin: false
+                      sideMarginOnly: false
+                      hideView: true
+                - type: AnimationItem
+                  xs: 12
+                  id: kf41zyag
+                  items:
+                    - type: RelatedList
+                      xs: 12
+                      id: kf4201m4
+                      title: Employers
+                      object: employments
+                      field: person
+                      displayfields: companies,role
+                      onlyVisibleWithResults: false
+                      displayCard: true
+                      withBigMargin: true
+                      addButton: true
+              key: picture
+              name: Picture
+              field: gender
+              newOptions: Male,Female,Unknown,Other
+              md: 3
+      buttons:
+        - delete
+        - clone
+        - archive
+      factsBar:
+        - picture
+        - full_name
+        - email
+        - gender
+        - age
+        - address
+    create:
+      layout:
+        - type: FieldGrid
+          xs: 12
+          id: kdbnob72
+          title: New person
+          layout:
+            - id: kdbnohud
+              name: New person
+              columns: 2
+              showTitle: true
+              defaultExpanded: true
+              items:
+                - first_name
+                - last_name
+                - gender
+                - birthday
+            - id: kdbnouip
+              name: Contact
+              columns: 1
+              showTitle: true
+              defaultExpanded: true
+              items:
+                - address
+                - phone
+                - email
+            - id: khc32zrq
+              name: Other
+              columns: 1
+              showTitle: true
+              defaultExpanded: false
+              items:
+                - types
+                - notes
+          newOptions: Contact
+      buttons: []
+  app: System
+  indexed: true
+  indexed_fields: address,email,phone
+  preview:
+    fields:
+      - email
+      - age
+      - types
+    picture: picture
+    enabled: true
+  lists:
+    customers:
+      name: Customers
+      filter:
+        - key: types
+          operator: equals
+          value: customer
+  rules:
+  api:
+    read:
+      active: true
+- key: apps
+  name: App
+  name_plural: Apps
+  permissions:
+    read:
+      - known
+    create:
+      - admin
+    modifyOwn:
+      - known
+    write:
+      - known
+    delete:
+      - admin
+    deleteOwn:
+      - known
+    archive: []
+    archiveOwn: []
+  fields:
+    name:
+      name: Name
+      type: input
+      required: true
+    color:
+      name: Color
+      required: true
+      type: color
+    id:
+      name: ID
+      required: true
+      unique: true
+      type: input
+    core:
+      name: Core
+      type: boolean
+    root:
+      name: Root
+      type: boolean
+    mobileSettings:
+      name: Mobile settings
+      type: data
+    icon:
+      name: Icon
+      type: input
+    permission___view:
+      name: View permission
+      type: input
+    widgets:
+      name: Widgets
+      type: boolean
+    choices:
+      name: Choices
+      type: data
+    repository:
+      name: Repository
+      type: input
+      typeArgs:
+        type: url
+  layouts:
+    default:
+      layout:
+        - type: AnimationContainer
+          xs: 12
+          id: kf6wq7bt
+          items:
+            - type: AnimationItem
+              xs: 12
+              id: kf6wq937
+              items:
+                - type: Paper
+                  xs: 12
+                  id: kf6wqc5g
+                  title: App
+                  withBigMargin: true
+                  items:
+                    - type: FieldGrid
+                      xs: 12
+                      id: kf6wqogg
+                      title: App
+                      layout:
+                        - id: kf6wqqjr
+                          name: Info
+                          columns: 1
+                          showTitle: true
+                          defaultExpanded: true
+                          items:
+                            - name
+                            - id
+                            - permission___view
+                            - widgets
+                            - repository
+                        - id: kf6wr5az
+                          name: Settings
+                          columns: 2
+                          showTitle: true
+                          defaultExpanded: false
+                          items:
+                            - color
+                            - core
+                            - root
+                            - mobileSettings
+                            - icon
+                            - choices
+                      withBigMargin: true
+                      key: repository
+                      name: Repository
+  overviews:
+    default:
+      fields:
+        - name
+        - color
+        - id
+      buttons:
+        - create
+      actions:
+        - delete
+  primary: name
+  actions:
+    create:
+      layout: default
+      type: create
+  icon: FaGripHorizontal
+  app: System
+  indexed: true
+  preview:
+    fields:
+      - name
+      - id
+      - color
+    enabled: true
+- key: system-tasks
+  name: System task
+  name_plural: System tasks
+  permissions:
+    read:
+      - known
+    create:
+      - known
+    modifyOwn:
+      - known
+    write:
+      - known
+    delete:
+      - admin
+    deleteOwn:
+      - known
+    archive: []
+    archiveOwn: []
+  icon: FaLaptopCode
+  fields:
+    name:
+      name: Name
+      type: input
+    type:
+      name: Type
+      type: input
+      typeArgs:
+        options:
+          - label: Box update
+            key: Box update
+        display: dropdown
+        type: text
+    description:
+      name: Description
+      type: input
+    when:
+      name: When
+      type: input
+    action:
+      name: Action
+      type: input
+    done:
+      name: Done
+      type: boolean
+    arguments:
+      name: Arguments
+      type: data
+    progress:
+      name: Progress
+      type: input
+      typeArgs:
+        type: number
+    state:
+      name: State
+      type: input
+    target:
+      name: Target
+      type: options
+      typeArgs:
+        options:
+          - label: Supervisor
+            key: Supervisor
+          - label: Engine
+            key: Engine
+        display: dropdown
+      default: Supervisor
+    error:
+      name: Error
+      type: boolean
+  overviews:
+    default:
+      fields:
+        - name
+        - progress
+        - state
+        - done
+      buttons: []
+      actions:
+        - delete
+  layouts:
+    default:
+      layout:
+        - type: AnimationContainer
+          xs: 12
+          id: khucbc8k
+          items:
+            - type: AnimationItem
+              xs: 12
+              id: khucbhb6
+              items:
+                - type: Paper
+                  xs: 12
+                  id: khucbkgn
+                  withBigMargin: true
+                  items:
+                    - type: Field
+                      xs: 12
+                      id: khgvt9n1
+                      field: progress
+                    - type: Field
+                      xs: 12
+                      id: khgvtj6g
+                      field: action
+                    - type: Field
+                      xs: 12
+                      id: khgvtqdl
+                      field: target
+                    - type: Field
+                      xs: 12
+                      id: khgvtxyj
+                      field: arguments
+                    - type: Field
+                      xs: 12
+                      id: khgvu9o0
+                      field: done
+      buttons:
+        - delete
+      factsBar:
+        - name
+        - description
+        - done
+        - progress
+        - state
+        - action
+  primary: name
+  app: System
+  preview:
+    fields:
+      - action
+      - progress
+      - state
+    enabled: true
+- key: permissions
+  name: Permission
+  name_plural: Permissions
+  permissions:
+    read:
+      - known
+    create:
+      - admin
+    modifyOwn:
+      - known
+    write:
+      - known
+    delete:
+      - admin
+    deleteOwn:
+      - known
+    archive: []
+    archiveOwn: []
+  icon: FaLock
+  primary: name
+  fields:
+    name:
+      name: Name
+      type: input
+      required: true
+    description:
+      name: Description
+      type: input
+  actions:
+    create:
+      layout: create
+      type: create
+  overviews:
+    default:
+      fields:
+        - name
+        - description
+      buttons:
+        - create
+      actions:
+        - delete
+  layouts:
+    default:
+      layout:
+        - type: AnimationContainer
+          xs: 12
+          id: kajomdxq
+          items:
+            - type: GridContainer
+              xs: 12
+              id: kajomgf9
+              items:
+                - type: GridItem
+                  xs: 12
+                  id: kajomhyb
+                  md: 9
+                  items:
+                    - type: AnimationItem
+                      xs: 12
+                      id: kajoms80
+                      items:
+                        - type: Paper
+                          xs: 12
+                          id: kajomz1x
+                          items:
+                            - type: Field
+                              xs: 12
+                              id: kajon1hf
+                              md: 3
+                              field: name
+                            - type: Field
+                              xs: 12
+                              id: kajon5ah
+                              md: 3
+                              field: description
+                          withMargin: true
+                          hoverable: false
+                          withBigMargin: true
+                          withSmallMargin: false
+                          sideMarginOnly: false
+                          hideView: true
+                - type: GridItem
+                  xs: 12
+                  id: kajomj0w
+                  md: 3
+                  items:
+                    - type: AnimationItem
+                      xs: 12
+                      id: kajomtx0
+                      items:
+                        - type: RelatedList
+                          xs: 12
+                          id: kajonaf5
+                          md: 3
+                          field: permissions
+                          object: roles
+                          title: Roles with this permission
+                          displayfields: name,description
+                          onlyVisibleWithResults: false
+                          displayCard: true
+                          cardMargin: true
+                          withMargin: true
+                          withBigMargin: true
+                          withSmallMargin: false
+                          sideMarginOnly: false
+                          hoverable: false
+      buttons:
+        - delete
+        - clone
+        - archive
+      factsBar:
+        - name
+        - description
+    create:
+      layout:
+        - type: Field
+          xs: 12
+          id: kajooypa
+          key: create
+          field: name
+        - type: Field
+          xs: 12
+          id: kajoozpo
+          key: create
+          field: description
+  app: System
+  indexed: true
+  indexed_fields: description
+  preview:
+    fields:
+      - description
+    enabled: true
+- key: roles
+  name: Role
+  name_plural: Roles
+  permissions:
+    read:
+      - known
+    create:
+      - admin
+    modifyOwn:
+      - known
+    write:
+      - known
+    delete:
+      - admin
+    deleteOwn:
+      - known
+    archive: []
+    archiveOwn: []
+  icon: FaUserShield
+  primary: name
+  fields:
+    name:
+      name: Name
+      required: true
+      unique: true
+      type: input
+    description:
+      name: Description
+      type: input
+    permissions:
+      name: Permissions
+      type: relationship_m
+      typeArgs:
+        relationshipTo: permissions
+  actions:
+    create:
+      layout: create
+      type: create
+  overviews:
+    default:
+      fields:
+        - name
+        - description
+        - permissions
+      buttons:
+        - create
+      actions:
+        - delete
+  layouts:
+    default:
+      layout:
+        - type: AnimationContainer
+          xs: 12
+          id: kajp69s0
+          items:
+            - type: GridContainer
+              xs: 12
+              id: kajp6bhb
+              items:
+                - type: GridItem
+                  xs: 12
+                  id: kajp6dmo
+                  key: create
+                  name: Roles
+                  field: permissions
+                  md: 9
+                  items:
+                    - type: AnimationItem
+                      xs: 12
+                      id: kajp78pm
+                      items:
+                        - type: Paper
+                          xs: 12
+                          id: kajp85s9
+                          items:
+                            - type: Field
+                              xs: 12
+                              id: kajp89j9
+                              key: create
+                              name: Roles
+                              field: name
+                              md: 3
+                            - type: Field
+                              xs: 12
+                              id: kajp8b54
+                              key: create
+                              name: Roles
+                              field: description
+                              md: 3
+                            - type: Field
+                              xs: 12
+                              id: kajp8cd9
+                              key: create
+                              name: Roles
+                              field: permissions
+                              md: 3
+                          withMargin: true
+                          hoverable: false
+                          withBigMargin: true
+                          withSmallMargin: true
+                          sideMarginOnly: true
+                          hideView: true
+                - type: GridItem
+                  xs: 12
+                  id: kajp6ezv
+                  key: create
+                  name: Roles
+                  field: permissions
+                  md: 3
+                  items:
+                    - type: AnimationItem
+                      xs: 12
+                      id: kajp7ajt
+                      items:
+                        - type: RelatedList
+                          xs: 12
+                          id: kajp8nrv
+                          key: create
+                          name: Roles
+                          field: roles
+                          md: 3
+                          title: Users with this role
+                          object: users
+                          displayfields: full_name
+                          onlyVisibleWithResults: false
+                          displayCard: true
+                          cardMargin: true
+                          withMargin: true
+                          withBigMargin: false
+                          withSmallMargin: true
+                          sideMarginOnly: true
+                          hoverable: false
+      buttons:
+        - delete
+        - clone
+        - archive
+      factsBar:
+        - name
+        - description
+        - permissions
+    create:
+      layout:
+        - type: Field
+          xs: 12
+          id: kcnzaiih
+          field: name
+          key: create
+        - type: Field
+          xs: 12
+          id: kcnzaksu
+          field: description
+          key: create
+        - type: Field
+          xs: 12
+          id: kcnzam5f
+          field: permissions
+          key: create
+  app: System
+  indexed: true
+  indexed_fields: description
+  preview:
+    fields:
+      - description
+      - permissions
+    enabled: true
+- key: companies
+  name: Company
+  name_plural: Companies
+  preview:
+    fields:
+      - name
+    enabled: true
+    picture: logo
+  permissions:
+    read:
+      - known
+    create:
+      - known
+    modifyOwn:
+      - known
+    write:
+      - known
+    delete:
+      - known
+    deleteOwn:
+      - known
+    archive:
+      - known
+    archiveOwn:
+      - known
+  app: System
+  icon: FaBuilding
+  indexed: true
+  primary: name
+  fields:
+    name:
+      name: Name
+      required: true
+      unique: true
+      type: input
+    banner:
+      name: Banner
+      type: picture
+      typeArgs:
+        asBanner: true
+    logo:
+      name: Logo
+      type: picture
+    description:
+      name: Description
+      type: richtext
+    color:
+      name: Color
+      type: color
+      typeArgs:
+        asColor: true
+  actions:
+    create:
+      layout: create
+      type: create
+  overviews:
+    default:
+      fields:
+        - name
+      buttons:
+        - create
+      actions:
+        - delete
+  layouts:
+    default:
+      layout:
+        - type: AnimationContainer
+          xs: 12
+          id: kf4250o8
+          items:
+            - type: GridContainer
+              xs: 12
+              id: kf4252of
+              items:
+                - type: GridItem
+                  xs: 12
+                  id: kf425451
+                  items:
+                    - type: AnimationItem
+                      xs: 12
+                      id: kf42599n
+                      items:
+                        - type: Paper
+                          xs: 12
+                          id: kf425p94
+                          title: Company
+                          withBigMargin: true
+                          md: 3
+                          items:
+                            - type: Field
+                              xs: 12
+                              id: kf425wxb
+                              field: name
+                              md: 3
+                              title: Company
+                              withBigMargin: true
+                            - type: Field
+                              xs: 12
+                              id: kfzbtswj
+                              field: description
+                              hideView: false
+                              title: Graphics
+                              hideEdit: false
+                  md: 9
+                - type: GridItem
+                  xs: 12
+                  id: kf4255jg
+                  items:
+                    - type: AnimationItem
+                      xs: 12
+                      id: kf425b3f
+                      items:
+                        - type: RelatedList
+                          xs: 12
+                          id: kf4264p7
+                          title: Employees
+                          object: employments
+                          field: companies
+                          displayfields: person,role
+                          onlyVisibleWithResults: false
+                          displayCard: true
+                          withBigMargin: true
+                          addButton: true
+                          md: 3
+                    - type: AnimationItem
+                      xs: 12
+                      id: kfzbta90
+                      items:
+                        - type: Paper
+                          xs: 12
+                          id: kfzbtdcc
+                          title: Coporate Identity
+                          hideView: true
+                          items:
+                            - type: Field
+                              xs: 12
+                              id: kfzd2dze
+                              field: color
+                              hideView: true
+                              title: Coporate Identity
+                              key: color
+                              name: Color
+                            - type: Field
+                              xs: 12
+                              id: kf42schr
+                              field: logo
+                              hideView: true
+                            - type: Field
+                              xs: 12
+                              id: kf42sa1z
+                              field: banner
+                              hideView: true
+                  md: 3
+      buttons: []
+      factsBar:
+        - logo
+        - name
+        - description
+    create:
+      layout:
+        - type: Field
+          xs: 12
+          id: kf2snnza
+          field: name
+          key: create
+      buttons: []
+- key: employments
+  name: Emploment
+  name_plural: Employments
+  preview:
+    fields:
+      - name
+      - person
+      - companies
+      - role
+    enabled: true
+  permissions:
+    read:
+      - known
+    create:
+      - known
+    modifyOwn:
+      - known
+    write:
+      - known
+    delete:
+      - known
+    deleteOwn:
+      - known
+    archive:
+      - known
+    archiveOwn:
+      - known
+  linked: true
+  linkedModels:
+    - label: Person
+      value: person
+    - label: Company
+      value: companies
+  primary: name
+  icon: FaLink
+  actions:
+    create:
+      layout: default
+      type: create
+  overviews:
+    default:
+      fields:
+        - name
+        - person
+        - role
+        - companies
+      buttons:
+        - create
+      actions:
+        - delete
+  layouts:
+    default:
+      layout:
+        - type: AnimationContainer
+          xs: 12
+          id: kf2r51ws
+          items:
+            - type: AnimationItem
+              xs: 12
+              id: kf2r5375
+              items:
+                - type: Paper
+                  xs: 12
+                  id: kf2r56lv
+                  title: Emploment
+                  withBigMargin: true
+                  key: default
+                  items:
+                    - type: Field
+                      id: 40599ueykf2suw7t
+                      field: person
+                    - type: Field
+                      xs: 12
+                      id: 40599ueykf2suw7u
+                      field: companies
+                    - type: Field
+                      xs: 12
+                      id: kf2zyfym
+                      field: role
+                    - type: Field
+                      xs: 12
+                      id: kg6e6ida
+                      field: description
+                      key: description
+                      name: Description
+      buttons: []
+    create:
+      layout:
+        - type: Field
+          id: 40599ueykf2suw7t
+          field: person
+        - type: Field
+          id: 40599ueykf2suw7u
+          field: companies
+        - type: Field
+          xs: 12
+          id: kf2zyzzq
+          field: role
+      buttons: []
+  fields:
+    name:
+      name: Name
+      type: auto_name
+      typeArgs:
+        prefix: EM
+        mode: increment
+    person:
+      name: Person
+      type: relationship
+      required: true
+      typeArgs:
+        relationshipTo: people
+    companies:
+      name: Company
+      type: relationship
+      required: true
+      typeArgs:
+        relationshipTo: companies
+    role:
+      name: Role
+      type: options
+      typeArgs:
+        options:
+          - label: Director
+            key: Director
+          - label: Marketing employee
+            key: Marketing employee
+          - label: Cleaner
+            key: Cleaner
+          - label: Hacker
+            key: Hacker
+          - label: Intern
+            key: Intern
+          - label: Owner
+            key: Owner
+          - label: Programmer
+            key: Programmer
+          - label: Designer
+            key: Designer
+          - label: Manager
+            key: Manager
+        display: dropdown
+    description:
+      name: Description
+      type: richtext
+  __v: 14
+  indexed: true
+- key: system-automations
+  name: Automation
+  name_plural: Automations
+  preview:
+    fields:
+      - name
+      - type
+      - description
+    enabled: true
+  permissions:
+    read:
+      - known
+    create:
+      - known
+    modifyOwn:
+      - known
+    write:
+      - known
+    delete:
+      - known
+    deleteOwn:
+      - known
+    archive:
+      - known
+    archiveOwn:
+      - known
+  actions:
+    create:
+      layout: default
+      type: create
+  overviews:
+    default:
+      fields:
+        - name
+        - type
+        - description
+      buttons:
+        - create
+      actions:
+        - delete
+  layouts:
+    default:
+      layout:
+        - type: AnimationContainer
+          xs: 12
+          id: kf2r51ws
+          items:
+            - type: AnimationItem
+              xs: 12
+              id: kf2r5375
+              items:
+                - type: Paper
+                  xs: 12
+                  id: kf2r56lv
+                  title: Automation
+                  withBigMargin: true
+                  key: default
+                  items:
+                    - type: Field
+                      xs: 12
+                      id: kgqreclk
+                      field: name
+                      key: description
+                      name: Description
+                      newOptions: Automation,Process
+                    - type: Field
+                      xs: 12
+                      id: kgqrefz2
+                      field: type
+                      key: description
+                      name: Description
+                      newOptions: Automation,Process
+                    - type: Field
+                      xs: 12
+                      id: kgqrekcm
+                      field: description
+                      key: description
+                      name: Description
+                      newOptions: Automation,Process
+      buttons: []
+    create:
+      layout:
+        - type: Field
+          xs: 12
+          id: kgqrer2k
+          field: name
+          key: description
+          name: Description
+          newOptions: Automation,Process
+        - type: Field
+          xs: 12
+          id: kgqrexhs
+          field: type
+          key: description
+          name: Description
+          newOptions: Automation,Process
+        - type: Field
+          xs: 12
+          id: kgqrf154
+          field: description
+          key: description
+          name: Description
+          newOptions: Automation,Process
+      buttons: []
+    app:
+      layout:
+        - type: Paper
+          xs: 12
+          id: kgwr15n2
+          title: Automation
+          withBigMargin: true
+          items:
+            - type: Field
+              xs: 12
+              id: kgwr1to4
+              field: name
+              title: Automation
+              withBigMargin: true
+            - type: Field
+              xs: 12
+              id: kgwr1x4x
+              field: description
+              title: Automation
+              withBigMargin: true
+            - type: Field
+              xs: 12
+              id: kgwr2245
+              field: type
+              title: Automation
+              withBigMargin: true
+            - type: Field
+              xs: 12
+              id: kgwr2951
+              field: active
+              title: Automation
+              withBigMargin: true
+      buttons:
+        - delete
+        - archive
+  app: settings
+  icon: FaRobot
+  primary: name
+  fields:
+    name:
+      name: Name
+      required: true
+      unique: false
+      type: input
+    type:
+      name: Type
+      type: options
+      typeArgs:
+        options:
+          - label: Automation
+            key: Automation
+          - label: Process
+            key: Process
+        display: dropdown
+      default: Automation
+    description:
+      name: Description
+      type: richtext
+    active:
+      name: Active
+      type: boolean
+    data:
+      name: Data
+      type: data
+  indexed: true
+  handlers:
+    settings: "/settings/automations/{object:_id}"
+- key: document-template
+  name: Document template
+  name_plural: Document templates
+  preview:
+    fields: []
+  permissions:
+    read:
+      - known
+    create:
+      - known
+    modifyOwn:
+      - known
+    write:
+      - known
+    delete:
+      - known
+    deleteOwn:
+      - known
+    archive:
+      - known
+    archiveOwn:
+      - known
+  actions:
+    create:
+      layout: create
+      type: create
+  overviews:
+    default:
+      fields:
+        - name
+        - model
+      buttons:
+        - create
+      actions:
+        - delete
+  layouts:
+    default:
+      layout:
+        - type: AnimationContainer
+          xs: 12
+          id: kf2r51ws
+          items:
+            - type: AnimationItem
+              xs: 12
+              id: kf2r5375
+              items:
+                - type: Paper
+                  xs: 12
+                  id: kf2r56lv
+                  title: Document template
+                  withBigMargin: true
+                  key: default
+                  items:
+                    - type: Field
+                      xs: 12
+                      id: kg6pv5u4
+                      field: name
+                      key: model
+                      name: Model
+                    - type: Field
+                      xs: 12
+                      id: kg6pv9o4
+                      field: model
+                      key: model
+                      name: Model
+                    - type: Field
+                      xs: 12
+                      id: kg6unv52
+                      field: filename-prefix
+                      key: filename-prefix
+                      name: Filename prefix
+                    - type: Field
+                      xs: 12
+                      id: kg6ujygy
+                      field: template
+                      key: template
+                      name: Template
+      buttons: []
+    create:
+      layout:
+        - type: Field
+          xs: 12
+          id: kg6pvmim
+          field: name
+        - type: Field
+          xs: 12
+          id: kg6pvr3g
+          field: model
+        - type: Field
+          xs: 12
+          id: kg6uk2ym
+          field: filename-prefix
+          key: filename-prefix
+          name: Filename prefix
+        - type: Field
+          xs: 12
+          id: kg6uo22l
+          field: template
+          key: filename-prefix
+          name: Filename prefix
+      buttons: []
+  app: System
+  icon: FaFileContract
+  primary: name
+  fields:
+    name:
+      name: Name
+      type: input
+      required: true
+    model:
+      name: Model
+      type: input
+      required: true
+    template:
+      name: Template
+      type: input
+      typeArgs:
+        type: textarea
+    filename-prefix:
+      name: Filename prefix
+      required: true
+      type: input
+      unique: true
+  rules:
+    noscript:
+      name: No script tags
+      checkedOn: InsertAndUpdate
+      message: Template can't contain javascript for security reasons.
+      rule: contains(to_lower_case(template),"<script")
+- key: object-extensions
+  name: Object extension
+  name_plural: Object extensions
+  permissions:
+    read:
+      - known
+    create:
+      - known
+    modifyOwn:
+      - known
+    write:
+      - known
+    delete:
+      - known
+    deleteOwn:
+      - known
+    archive: []
+    archiveOwn: []
+  preview:
+    fields: []
+  __v: 0
+  app: System
+  icon: FaPlug
+  primary: name
+  fields:
+    name:
+      name: Name
+      required: true
+      unique: true
+      type: input
+    key:
+      name: Key
+      unique: true
+      required: true
+      type: input
+  actions:
+    create:
+      layout: default
+      type: create
+  overviews:
+    default:
+      fields:
+        - name
+      buttons:
+        - create
+      actions:
+        - delete
+  layouts:
+    default:
+      layout:
+        - type: AnimationContainer
+          xs: 12
+          id: kesk2rrr
+          items:
+            - type: AnimationItem
+              xs: 12
+              id: kesk2u25
+              items:
+                - type: Paper
+                  xs: 12
+                  id: kesk2vcj
+                  withBigMargin: true
+                  key: key
+                  name: Key
+                  items:
+                    - type: Field
+                      xs: 12
+                      id: kesjwye9
+                      field: name
+                      key: default
+                      name: Name
+                    - type: Field
+                      xs: 12
+                      id: kesk30dy
+                      field: key
+                      key: key
+                      name: Key
+                      withBigMargin: true
+      buttons: []

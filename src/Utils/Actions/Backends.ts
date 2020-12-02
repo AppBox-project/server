@@ -1,5 +1,3 @@
-import { systemLog } from "../Utils/Utils";
-
 const { fork } = require("child_process");
 const path = require("path");
 
@@ -16,7 +14,7 @@ export default [
       const backend = fork(
         `/AppBox/System/Backends/${args.appId}/build/index.js`
       );
-      systemLog(`Starting ${args.appId} backend`);
+      console.log(`Starting ${args.appId} backend`);
       backend.on("message", (message) => {
         switch (message) {
           case "ready":

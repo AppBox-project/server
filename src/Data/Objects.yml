@@ -1,0 +1,196 @@
+- objectId: apps
+  _id:
+    "$oid": 5ebe6e32fbbc234bb4a0cfd7
+  data:
+    name: Data Explorer
+    id: data-explorer
+    core: true
+    root: true
+    color:
+      r: 20
+      g: 126
+      b: 133
+      a: 1
+    icon: FaCompass
+    widgets: true
+- objectId: apps
+  _id:
+    "$oid": 5ebe6e53fbbc234bb4a0cfd8
+  data:
+    name: Model Manager
+    id: model-manager
+    core: true
+    root: true
+    color:
+      r: 32
+      g: 89
+      b: 113
+      a: 1
+    icon: FaCubes
+    permission___view: admin
+- objectId: apps
+  _id:
+    "$oid": 5ebe6e9afbbc234bb4a0cfda
+  data:
+    name: App Hub
+    id: app-hub
+    core: true
+    color:
+      r: 232
+      g: 139
+      b: 69
+      a: 1
+    icon: FaStoreAlt
+    permission___view: admin
+- objectId: apps
+  _id:
+    "$oid": 5ec2af40cd836f336c11e1e1
+  data:
+    name: Settings
+    id: settings
+    core: true
+    color:
+      r: 72
+      g: 82
+      b: 99
+      a: 1
+    icon: FaTools
+    permission___view: admin
+    root: true
+- objectId: system-automations
+  _id:
+    "$oid": 5f9c12b6f2933b0412b35dc2
+  data:
+    type: Process
+    name: Daily update
+    active: true
+    description:
+      "<p>Checks for updates every day and automatically installs them. Fifteen
+      minutes later all finished tasks (including user made ones) get cleaned up.&nbsp;</p>"
+    _id: 5f9c12b6f2933b0412b35dc2
+    data:
+      triggers:
+        - type: cron
+          args:
+            cron: 0 0 * * *
+          name: Every day
+      steps:
+        - condition:
+            name: Always
+            actionIfTrue: executeSteps
+            actionIfFalse: nextStep
+            conditions:
+              - type: always
+          actions:
+            - name: Create update task
+              type: AddObject
+              args:
+                newObject:
+                  '{"model":"system-task","object":{"name":{"formula":"{{ date_format(__TODAY,
+                  ''MMM do'') }} nightly update "},"action":"box-update","type":"Box update","description":"Triggered
+                  by a process.","when":"asap","done":false,"progress":0,"state":"Waiting..","target":"Supervisor"}}'
+            - name: while task completes
+              type: wait
+              args:
+                newObject:
+                  '{"model":"system-task","object":{"name":{"formula":"{{ date_format(__TODAY,
+                  ''MMM do'') }} nightly update "},"action":"box-update","type":"Box update","description":"Triggered
+                  by a process.","when":"asap","done":false,"progress":"0","state":"Waiting.."}}'
+                timeout: 900000
+            - name: Clean up done tasks
+              type: DeleteObjects
+              args:
+                DeleteObjects: '{"model":"system-task","object":[{"key":"done","operator":"equals","value":true}]}'
+- objectId: system-automations
+  _id:
+    "$oid": 5faaf222a41a572719e9bd4f
+  data:
+    type: Process
+    name: Weekly backup
+    active: true
+    description: "<p>Backs up the database weekly.</p>"
+    data:
+      triggers:
+        - type: cron
+          args:
+            cron: 0 0 * * SAT
+          name: On saturdays
+      steps:
+        - condition:
+            name: Always
+            actionIfTrue: executeSteps
+            actionIfFalse: nextStep
+            conditions:
+              - type: always
+          actions:
+            - name: Create backup task
+              type: AddObject
+              args:
+                newObject:
+                  '{"model":"system-task","object":{"name":{"formula":"{{ date_format(__TODAY,
+                  ''MMM do'') }} nightly update "},"action":"box-update","type":"Box update","description":"Triggered
+                  by a process.","when":"asap","done":false,"progress":0,"state":"Waiting..","target":"Supervisor"}}'
+- objectId: permissions
+  _id:
+    "$oid": 5ec92a260c0cc81eefb9154c
+  data:
+    name: user
+    description: Allows for common user actions.
+- objectId: permissions
+  _id:
+    "$oid": 5ec92a550c0cc81eefb9154d
+  data:
+    name: admin
+    description: Allows for most admin actions.
+- objectId: permissions
+  _id:
+    "$oid": 5ee120754052e80183dec284
+  data:
+    name: read-system-process
+    description: Allows reading of system processes
+- objectId: permissions
+  _id:
+    "$oid": 5ee1209f4052e80183dec285
+  data:
+    name: create-system-process
+    description: Allows for creation of system processes
+- objectId: permissions
+  _id:
+    "$oid": 5ee121464052e80183dec286
+  data:
+    name: nobody
+    description: Nobody can perform this action.
+- objectId: roles
+  _id:
+    "$oid": 5ec92a7c0c0cc81eefb9154e
+  data:
+    name: User
+    description: General user of the system
+    permissions:
+      - 5ec92a260c0cc81eefb9154c
+      - 5eca4512c951e2108f28b28d
+      - 5f7f0a15c0028930a6af6157
+- objectId: roles
+  _id:
+    "$oid": 5ec92a880c0cc81eefb9154f
+  data:
+    name: Admin
+    description: Administrators of the system
+    permissions:
+      - 5ec92a550c0cc81eefb9154d
+      - 5ec96b1d8ac32036bfeabc7a
+      - 5ee120754052e80183dec284
+      - 5ee1209f4052e80183dec285
+      - 5fbbcf5914eeef01e61d0b01
+- objectId: object-extensions
+  _id:
+    "$oid": 5f56334f73b49305d1ea3443
+  data:
+    name: 2FA
+    key: 2fa
+- objectId: object-extensions
+  _id:
+    "$oid": 5f8472d0ab919b006ecb269f
+  data:
+    name: Document generator
+    key: document_generator
