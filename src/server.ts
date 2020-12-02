@@ -255,6 +255,42 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
 
           if (!initialised) {
             socket.emit("noInit");
+            socket.on("createUser", async (args) => {
+              const personId = await f.data.insertObject(
+                models,
+                socketInfo,
+                {
+                  requestId: args.requestId,
+                  object: {
+                    first_name: args.user.first_name,
+                    last_name: args.user.last_name,
+                    email: args.user.email,
+                    birthday: args.user.birthday,
+                  },
+                  type: "people",
+                },
+                socket
+              );
+              await f.data.insertObject(
+                models,
+                socketInfo,
+                {
+                  requestId: args.requestId,
+                  object: {
+                    username: args.user.username,
+                    person: personId,
+                    email: args.user.email,
+                    password: args.user.password,
+                    roles: [
+                      "5ec92a880c0cc81eefb9154f",
+                      "5ec92a7c0c0cc81eefb9154e",
+                    ],
+                  },
+                  type: "users",
+                },
+                socket
+              );
+            });
           } else {
             actions.map((action) => {
               // Perform action
@@ -295,6 +331,7 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
     });
   });
 
+// This function gets called if there is no data yet. We add the data from src/data
 const insertDefaultData = async (models) => {
   console.log("Inserting default data");
   const newModels = YAML.parse(

@@ -8,7 +8,7 @@
     read:
       - known
     create:
-      - admin
+      - everyone
     modifyOwn:
       - known
     write:
@@ -19,7 +19,6 @@
       - known
     archive: []
     archiveOwn: []
-
   fields:
     username:
       name: Username
@@ -515,7 +514,7 @@
     read:
       - known
     create:
-      - known
+      - everyone
     modifyOwn:
       - known
     write:
@@ -526,7 +525,6 @@
       - known
     archive: []
     archiveOwn: []
-
   icon: FaUserFriends
   primary: full_name
   fields:

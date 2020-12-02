@@ -255,10 +255,11 @@ export default {
       .then((model: AppModelType) => {
         if (model) {
           let hasWriteAccess = false;
-          model.permissions.write.map((permission) => {
-            if (socketInfo.permissions.includes(permission)) {
+
+          model.permissions.create.map((permission) => {
+            if (permission === "everyone") hasWriteAccess = true;
+            if (socketInfo.permissions.includes(permission))
               hasWriteAccess = true;
-            }
           });
 
           // Validate & save
@@ -384,6 +385,7 @@ export default {
             hasCreateAccess = true;
           } else {
             model.permissions.create.map((permission) => {
+              if (permission === "everyone") hasCreateAccess = true;
               if (
                 socketInfo.permissions.includes(permission) ||
                 socketInfo.permissions.includes("system")

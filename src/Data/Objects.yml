@@ -160,6 +160,12 @@
   data:
     name: nobody
     description: Nobody can perform this action.
+- objectId: permissions
+  _id:
+    "$oid": 5ee121464052e80183dec286
+  data:
+    name: everybody
+    description: Everyone can perform this action, even not-logged in users.
 - objectId: roles
   _id:
     "$oid": 5ec92a7c0c0cc81eefb9154e
