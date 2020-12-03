@@ -158,7 +158,7 @@
     description: Nobody can perform this action.
 - objectId: permissions
   _id:
-    "$oid": 5ee121464052e80183dec286
+    "$oid": 5ee121464052e80183dec289
   data:
     name: everybody
     description: Everyone can perform this action, even not-logged in users.

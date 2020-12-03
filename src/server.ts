@@ -122,7 +122,7 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
       const initialModels = await models.models.model.find();
       let initialised = true;
       const isConfigured = await models.systemsettings.findOne({
-        key: "onboarded",
+        key: "systemDataVersion",
       });
       if (initialModels.length < 1) {
         console.log("Database is empty. Inserting basic data.");
@@ -290,9 +290,16 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
                 },
                 socket
               );
+              const newModels = YAML.parse(
+                await fs.readFileSync(
+                  "/AppBox/System/Server/src/Data/Models.yml",
+                  "utf8"
+                )
+              );
+
               await models.systemsettings.create({
-                key: "onboarded",
-                value: true,
+                key: "systemDataVersion",
+                value: newModels.systemDataVersion,
               });
               initialised = true;
               socket.emit(`receive-${args.requestId}`, {
@@ -349,10 +356,11 @@ const insertDefaultData = async (models) => {
   const newObjects = YAML.parse(
     await fs.readFileSync("/AppBox/System/Server/src/Data/Objects.yml", "utf8")
   );
+
   newObjects.map((o, index) => {
     newObjects[index]._id = mongoose.Types.ObjectId(o._id.$oid);
   });
 
-  models.models.model.insertMany(newModels);
-  models.objects.model.insertMany(newObjects);
+  await models.models.model.insertMany(newModels.models);
+  await models.objects.model.insertMany(newObjects);
 };
