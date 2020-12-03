@@ -283,7 +283,6 @@ export default {
                         model,
                         args.toChange
                       ).data;
-
                       // Check if the model has any rules
                       let passedRules = true;
                       let feedback = [];
@@ -394,6 +393,7 @@ export default {
               }
             });
           }
+
           if (hasCreateAccess) {
             // Todo: objectcount is only used when a auto_name field is present.
             const objectCount: number =
@@ -455,7 +455,7 @@ export default {
                         objectId: args.type,
                       },
                       model,
-                      {}
+                      args.object
                     )
                   );
 

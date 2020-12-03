@@ -86,21 +86,17 @@
               type: AddObject
               args:
                 newObject:
-                  '{"model":"system-task","object":{"name":{"formula":"{{ date_format(__TODAY,
+                  '{"model":"system-tasks","object":{"name":{"formula":"{{ date_format(__TODAY,
                   ''MMM do'') }} nightly update "},"action":"box-update","type":"Box update","description":"Triggered
                   by a process.","when":"asap","done":false,"progress":0,"state":"Waiting..","target":"Supervisor"}}'
             - name: while task completes
               type: wait
               args:
-                newObject:
-                  '{"model":"system-task","object":{"name":{"formula":"{{ date_format(__TODAY,
-                  ''MMM do'') }} nightly update "},"action":"box-update","type":"Box update","description":"Triggered
-                  by a process.","when":"asap","done":false,"progress":"0","state":"Waiting.."}}'
                 timeout: 900000
             - name: Clean up done tasks
               type: DeleteObjects
               args:
-                DeleteObjects: '{"model":"system-task","object":[{"key":"done","operator":"equals","value":true}]}'
+                DeleteObjects: '{"model":"system-tasks","object":[{"key":"done","operator":"equals","value":true}]}'
 - objectId: system-automations
   _id:
     "$oid": 5faaf222a41a572719e9bd4f
@@ -127,7 +123,7 @@
               type: AddObject
               args:
                 newObject:
-                  '{"model":"system-task","object":{"name":{"formula":"{{ date_format(__TODAY,
+                  '{"model":"system-tasks","object":{"name":{"formula":"{{ date_format(__TODAY,
                   ''MMM do'') }} nightly update "},"action":"box-update","type":"Box update","description":"Triggered
                   by a process.","when":"asap","done":false,"progress":0,"state":"Waiting..","target":"Supervisor"}}'
 - objectId: permissions

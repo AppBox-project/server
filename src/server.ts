@@ -290,6 +290,15 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
                 },
                 socket
               );
+              await models.systemsettings.create({
+                key: "onboarded",
+                value: true,
+              });
+              initialised = true;
+              socket.emit(`receive-${args.requestId}`, {
+                success: true,
+                token: f.user.getToken(args.user.username, args.user.password),
+              });
             });
           } else {
             actions.map((action) => {
