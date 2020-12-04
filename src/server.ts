@@ -28,23 +28,23 @@ require("./Utils/Models/SystemSettings");
 // Start up server
 const app = express();
 app.set("port", config.port);
+app.use(cors());
 // Serve public files
 let http = require("http").Server(app);
-let io = require("socket.io")(http);
+
+let io = require("socket.io")(http, {
+  cors: {
+    credentials: true,
+    origin: process.env.URL,
+    methods: ["GET", "POST"],
+  },
+});
 
 console.log(
   `Trying to connect to the database at ${
     process.env.DBURL || "localhost:27017"
   }`
 );
-
-// Redirect trailing slashes.
-app.use((req, res, next) => {
-  const test = /\?[^]*\//.test(req.url);
-  if (req.url.substr(-1) === "/" && req.url.length > 1 && !test)
-    res.redirect(301, req.url.slice(0, -1));
-  else next();
-});
 
 Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
   .then((res) => {
@@ -147,13 +147,22 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
 
       // Static storage files
       // Todo make non-private
-      app.use("/object-storage", express.static("../../Files/Objects"));
+      app.use(
+        "/object-storage",
+        (req, res, next) => {
+          const test = /\?[^]*\//.test(req.url);
+          if (req.url.substr(-1) === "/" && req.url.length > 1 && !test)
+            res.redirect(301, req.url.slice(0, -1));
+          else next();
+        },
+        express.static("../../Files/Objects")
+      );
 
       // Api
       app.use(bodyParser.urlencoded({ extended: true }));
       app.use(bodyParser.json());
       app.use(bodyParser.raw());
-      app.use("/api/:objectId/:apiId/:optional?", cors(), (req, res, next) => {
+      app.use("/api/:objectId/:apiId/:optional?", (req, res, next) => {
         switch (req.params.apiId) {
           case "read":
             executeReadApi(models, req.params.objectId, req, res, next);
