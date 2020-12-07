@@ -41,19 +41,20 @@ let io = require("socket.io")(http, {
 });
 
 console.log(
-  `Trying to connect to the database at ${
+  `Trying to connect to the database at mongodb://${
     process.env.DBURL || "localhost:27017"
   }`
 );
 
-Axios.get(`http://${process.env.DBURL || "localhost:27017"}/AppBox`)
+Axios.get(`http://${process.env.DBURL || "localhost:27017"}`)
   .then((res) => {
     mongoose.connect(
       `mongodb://${process.env.DBURL || "localhost:27017"}/AppBox`,
       {
         useNewUrlParser: true,
-        useCreateIndex: true,
-        useUnifiedTopology: true,
+        readPreference: "primary",
+        appName: "AppBox-Server",
+        ssl: false,
       }
     );
     var db = mongoose.connection;

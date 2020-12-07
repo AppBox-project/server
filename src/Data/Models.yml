@@ -1505,6 +1505,15 @@ models:
         type: color
         typeArgs:
           asColor: true
+      relationship:
+        name: Relationship
+        type: options
+        typeArgs:
+          options:
+            - label: Supplier
+              key: Supplier
+            - label: Customer
+              key: Customer
     actions:
       create:
         layout: create
@@ -1517,6 +1526,13 @@ models:
           - create
         actions:
           - delete
+    lists:
+      customers:
+        name: Customers
+        filter:
+          - key: relationship
+            operator: equals
+            value: Customer
     layouts:
       default:
         layout:
@@ -1544,19 +1560,20 @@ models:
                             md: 3
                             items:
                               - type: Field
-                                xs: 12
                                 id: kf425wxb
                                 field: name
                                 md: 3
                                 title: Company
                                 withBigMargin: true
                               - type: Field
-                                xs: 12
                                 id: kfzbtswj
                                 field: description
                                 hideView: false
                                 title: Graphics
                                 hideEdit: false
+                              - type: Field
+                                id: kfzbtswa
+                                field: relationship
                     md: 9
                   - type: GridItem
                     xs: 12
@@ -1618,7 +1635,9 @@ models:
             xs: 12
             id: kf2snnza
             field: name
-            key: create
+          - type: Field
+            id: kf2snnzb
+            field: relationship
         buttons: []
   - key: employments
     name: Emploment
