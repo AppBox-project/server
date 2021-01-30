@@ -16,7 +16,7 @@ export default [
         `yarn --cwd /AppBox/System/Backends/${args.appId} start ${process.env.DBURL} ${args.args.id}`
       );
 
-      console.log("Backend function succesfully executed.", result);
+      console.log("Backend function succesfully executed.");
       socket.emit(`receive-${args.requestId}`, {
         success: true,
         result,
