@@ -12,9 +12,15 @@ export default [
       }
       console.log("Executing backend function");
 
-      shell.exec(
+      const result = shell.exec(
         `yarn --cwd /AppBox/System/Backends/${args.appId} start ${process.env.DBURL} ${args.args.id}`
       );
+
+      console.log("Backend function succesfully executed.", result);
+      socket.emit(`receive-${args.requestId}`, {
+        success: true,
+        result,
+      });
     },
   },
 ];
