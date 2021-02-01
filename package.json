@@ -15,7 +15,7 @@
     "mongoose": "^5.10.11",
     "node-2fa": "^1.1.2",
     "node-http-ping": "^0.3.1",
-    "nodemon": "^2.0.4",
+    "nodemon": "^2.0.7",
     "nunjucks": "^3.2.2",
     "shelljs": "^0.8.4",
     "socket.io": "^3.0.4",
