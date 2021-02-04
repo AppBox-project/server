@@ -1,4 +1,4 @@
-systemDataVersion: 1
+systemDataVersion: 2
 models:
   - key: users
     name: User
@@ -898,6 +898,12 @@ models:
   - key: apps
     name: App
     name_plural: Apps
+    preview:
+      fields:
+        - name
+        - id
+        - color
+      enabled: true
     permissions:
       read:
         - known
@@ -953,6 +959,18 @@ models:
         type: input
         typeArgs:
           type: url
+      type:
+        name: Type
+        required: true
+        type: options
+        typeArgs:
+          display: radio
+          options:
+            - label: Collection
+              key: collection
+            - label: Code
+              key: Code
+        default: Collection
     layouts:
       default:
         layout:
@@ -983,6 +1001,7 @@ models:
                             items:
                               - name
                               - id
+                              - type
                               - permission___view
                               - widgets
                               - repository
@@ -1001,12 +1020,31 @@ models:
                         withBigMargin: true
                         key: repository
                         name: Repository
+      create:
+        layout:
+          - type: Field
+            id: kkr5ct6b
+            field: name
+          - type: Field
+            id: kkr5cua8
+            field: id
+          - type: Field
+            id: kkr5d4jq
+            field: type
+          - type: Field
+            id: kkr5dbng
+            field: color
+          - type: Field
+            id: kkr5dky4
+            field: icon
+        buttons: []
     overviews:
       default:
         fields:
           - name
           - color
           - id
+          - type
         buttons:
           - create
         actions:
@@ -1014,17 +1052,11 @@ models:
     primary: name
     actions:
       create:
-        layout: default
+        layout: create
         type: create
     icon: FaGripHorizontal
     app: System
     indexed: true
-    preview:
-      fields:
-        - name
-        - id
-        - color
-      enabled: true
   - key: system-tasks
     name: System task
     name_plural: System tasks
@@ -1784,7 +1816,6 @@ models:
       description:
         name: Description
         type: richtext
-    __v: 14
     indexed: true
   - key: system-automations
     name: Automation
@@ -2106,7 +2137,6 @@ models:
       archiveOwn: []
     preview:
       fields: []
-    __v: 0
     app: System
     icon: FaPlug
     primary: name
