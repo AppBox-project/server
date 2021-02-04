@@ -1,4 +1,4 @@
-systemDataVersion: 2
+systemDataVersion: 1
 models:
   - key: users
     name: User
