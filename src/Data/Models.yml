@@ -1,4 +1,4 @@
-systemDataVersion: 2
+systemDataVersion: 3
 models:
   - key: users
     name: User
@@ -959,6 +959,11 @@ models:
         type: input
         typeArgs:
           type: url
+        conditions:
+          conditions:
+            - field: type
+              operator: not_equals
+              value: collection
       type:
         name: Type
         required: true
@@ -971,6 +976,14 @@ models:
             - label: Code
               key: Code
         default: Collection
+      collection_data:
+        name: Collection data
+        type: data
+        conditions:
+          conditions:
+            - field: type
+              operator: equals
+              value: collection
     layouts:
       default:
         layout:
