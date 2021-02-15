@@ -1051,6 +1051,29 @@ models:
             id: kkr5dky4
             field: icon
         buttons: []
+      settings-basic:
+        layout:
+          - type: AnimationContainer
+            id: kl6qqcrv
+            items:
+              - type: AnimationItem
+                id: kl6qqe7t
+                items:
+                  - type: Paper
+                    id: kl6qqkl2
+                    title: Basic information
+                    withBigMargin: true
+                    items:
+                      - type: Field
+                        id: kl6qqv84
+                        field: name
+                      - type: Field
+                        id: kl6qqz32
+                        field: color
+                      - type: Field
+                        id: kl6qr2hq
+                        field: icon
+        buttons: []
     overviews:
       default:
         fields:
