@@ -1074,6 +1074,21 @@ models:
                         id: kl6qr2hq
                         field: icon
         buttons: []
+      settings-create-collection:
+        layout:
+          - type: Field
+            id: kl839yo6
+            field: name
+          - type: Field
+            id: kl83a0xk
+            field: id
+          - type: Field
+            id: kl839zn5
+            field: color
+          - type: Field
+            id: kl83a22i
+            field: icon
+        buttons: []
     overviews:
       default:
         fields:
