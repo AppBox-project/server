@@ -194,6 +194,52 @@ export default [
     },
   },
   {
+    // --> Delete data
+    // (requestId, objectId)
+    key: "deleteObjects",
+    action: (args, models, socket, socketInfo) => {
+      models.objects.model.findOne({ _id: args.objectId }).then((object) => {
+        if (object) {
+          models.models.model.findOne({ key: object.objectId }).then((type) => {
+            let hasDeleteAccess = false;
+            type.permissions.delete.map((permission) => {
+              if (socketInfo.permissions.includes(permission)) {
+                hasDeleteAccess = true;
+              }
+            });
+
+            if (hasDeleteAccess) {
+              if (socketInfo.username !== object.data.username) {
+                models.objects.model
+                  .deleteMany({ _id: { $in: args.objectId } })
+                  .then(() => {
+                    socket.emit(`receive-${args.requestId}`, {
+                      success: true,
+                    });
+                  });
+              } else {
+                socket.emit(`receive-${args.requestId}`, {
+                  success: false,
+                  reason: "cannot-delete-self",
+                });
+              }
+            } else {
+              socket.emit(`receive-${args.requestId}`, {
+                success: false,
+                reason: "no-delete-permission",
+              });
+            }
+          });
+        } else {
+          socket.emit(`receive-${args.requestId}`, {
+            success: false,
+            reason: "no-such-object",
+          });
+        }
+      });
+    },
+  },
+  {
     // --> Update many
     // Updates multiple entries, requires an object as such
     // { changes: {id: {fieldId: newValue} }, requestId }
