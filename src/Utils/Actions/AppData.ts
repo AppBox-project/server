@@ -55,15 +55,20 @@ export default [
           ...args.newModel,
           actions: {
             create: {
-              layout: "default",
+              label: "Create",
               type: "create",
+              mode: "free",
+              layout: "create",
             },
           },
           overviews: {
             default: {
               fields: defaultOverviewFields,
-              buttons: ["create"],
-              actions: ["delete"],
+              buttons: {
+                global: ["create"],
+                single: ["delete"],
+                multiple: ["delete"],
+              },
             },
           },
           layouts: {
@@ -93,7 +98,11 @@ export default [
                   ],
                 },
               ],
-              buttons: [],
+              buttons: [
+                { key: "delete" },
+                { key: "clone" },
+                { key: "archive" },
+              ],
             },
             create: {
               layout: defaultLayoutFields,
