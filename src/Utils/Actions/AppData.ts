@@ -759,4 +759,31 @@ export default [
       socket.emit(`receive-${args.requestId}`, { success: true });
     },
   },
+  {
+    key: "getSystemSettings",
+    action: async (args, models, socket, socketInfo: SocketInfoType) => {
+      const setting = await models.systemsettings.findOne({
+        key: args.key,
+      });
+      socket.emit(
+        `receive-${args.requestId}`,
+        setting
+          ? { success: true, value: setting }
+          : { success: false, reason: "no-results" }
+      );
+    },
+  },
+  {
+    key: "setSystemSettings",
+    action: async (args, models, socket, socketInfo: SocketInfoType) => {
+      let setting = await models.systemsettings.findOne({
+        key: args.key,
+      });
+      if (!setting) setting = new models.systemsetting({});
+      setting.value = args.value;
+      setting.markModified("value");
+      setting.save();
+      socket.emit(`receive-${args.requestId}`, { success: true });
+    },
+  },
 ];

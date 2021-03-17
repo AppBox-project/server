@@ -15,6 +15,7 @@
     "mongoose": "^5.11.19",
     "node-2fa": "^2.0.1",
     "node-http-ping": "^0.3.1",
+    "node-pushnotifications": "^1.6.2",
     "nodemon": "^2.0.4",
     "nunjucks": "^3.2.3",
     "shelljs": "^0.8.4",
