@@ -6,7 +6,7 @@ const { Schema } = mongoose;
 mongoose.model(
   "UserSettings",
   new Schema({
-    username: String,
+    user: String,
     key: String,
     value: mongoose.Mixed,
   })

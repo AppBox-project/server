@@ -779,11 +779,25 @@ export default [
       let setting = await models.systemsettings.findOne({
         key: args.key,
       });
-      if (!setting) setting = new models.systemsetting({});
+      if (!setting) setting = new models.systemsettings({ key: args.key });
       setting.value = args.value;
       setting.markModified("value");
       setting.save();
       socket.emit(`receive-${args.requestId}`, { success: true });
+    },
+  },
+  {
+    key: "getVapidPublicKey",
+    action: async (args, models, socket, socketInfo: SocketInfoType) => {
+      const setting = await models.systemsettings.findOne({
+        key: "notification",
+      });
+      socket.emit(
+        `receive-${args.requestId}`,
+        setting
+          ? { success: true, key: setting.value.vapid.publicKey }
+          : { success: false, reason: "no-vapid-key" }
+      );
     },
   },
 ];

@@ -12,8 +12,10 @@ import Axios from "axios";
 import executeReadApi from "./API/read";
 import executeStandaloneApi from "./API/standalone";
 import executeSignInApi from "./API/signIn";
+import PushNotificationSender from "./Utils/Utils/Notifications";
 const bodyParser = require("body-parser");
 const YAML = require("yaml");
+const webpush = require("web-push");
 
 // Models
 require("./Utils/Models/Models");
@@ -134,6 +136,10 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}`)
         initialised = false;
       }
 
+      // Notifications
+      // This class monitors and despatches push notifications
+      new PushNotificationSender(models);
+
       // Index
       createIndex(models);
 
@@ -145,6 +151,52 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}`)
 
       // Sites
       app.use("/sites", express.static("/AppBox/Files/Sites"));
+      app.use(bodyParser.urlencoded({ extended: true }));
+      app.use(bodyParser.json());
+      app.use(bodyParser.raw());
+
+      app.post("/subscribe", (req, res) => {
+        const subscription = req.body.subscription;
+        const subscriptionId = req.body.subscriptionId;
+        const username = req.body.username;
+        const token = req.body.token;
+        console.log(username, token);
+
+        models.objects.model
+          .findOne({ objectId: "users", "data.username": username })
+          .then(async (user) => {
+            if (user) {
+              if (f.user.checkUserToken(user, token)) {
+                console.log("User validation succeeded");
+
+                let userSubscriptions = await models.usersettings.model.findOne(
+                  {
+                    key: "notificationSubscriptions",
+                    user: user._id,
+                  }
+                );
+                if (!userSubscriptions)
+                  userSubscriptions = new models.usersettings.model({
+                    key: "notificationSubscriptions",
+                    user: user._id,
+                    value: {},
+                  });
+                userSubscriptions.value = {
+                  ...userSubscriptions.value,
+                  [subscriptionId]: subscription,
+                };
+
+                await userSubscriptions.save();
+              } else {
+                console.log("User validation failed");
+              }
+            } else {
+              console.log("No such user");
+            }
+          });
+
+        res.status(201).json({});
+      });
 
       // Static storage files
       // Todo make non-private
@@ -160,9 +212,6 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}`)
       );
 
       // Api
-      app.use(bodyParser.urlencoded({ extended: true }));
-      app.use(bodyParser.json());
-      app.use(bodyParser.raw());
       app.use("/api/:objectId/:apiId/:optional?", (req, res, next) => {
         switch (req.params.apiId) {
           case "read":
