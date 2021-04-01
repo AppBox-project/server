@@ -102,33 +102,35 @@ const updateObjectIndex = async (change, models) => {
       }
     }
   } else if (change.operationType === "update") {
-    // Update operation (by UI)
-    // Replace old object by new object in the index
-    console.log(
-      `Object changed. Re-indexing: ${change.documentKey._id.toString()}`
-    );
-    let newObject = await models.objects.model.find({
-      _id: change.documentKey._id,
-    });
-    newObject = newObject[0];
-    const oldObjectIndex = findIndex(searchableIndex, (o) => {
-      return o?.id === change.documentKey._id.toString();
-    });
-    const model = find(modelIndex, (o) => o.key === newObject.objectId);
-
-    const io = {
-      primary: newObject.data[model.primary],
-      type: model.key,
-      id: newObject._id.toString(),
-    };
-    let keyword = `${newObject.data[model.primary]}`;
-    if (model.indexed_fields) {
-      model.indexed_fields.split(",").map((field, index) => {
-        keyword = `${keyword} ${newObject.data[field]}`;
+    if (change.documentKey._id) {
+      // Update operation (by UI)
+      // Replace old object by new object in the index
+      console.log(
+        `Object changed. Re-indexing: ${change.documentKey._id.toString()}`
+      );
+      let newObject = await models.objects.model.find({
+        _id: change.documentKey._id,
       });
+      newObject = newObject[0];
+      const oldObjectIndex = findIndex(searchableIndex, (o) => {
+        return o?.id === change.documentKey._id.toString();
+      });
+      const model = find(modelIndex, (o) => o.key === newObject?.objectId);
+
+      const io = {
+        primary: newObject?.data[model?.primary],
+        type: model?.key,
+        id: newObject?._id.toString(),
+      };
+      let keyword = `${newObject?.data[model?.primary]}`;
+      if (model?.indexed_fields) {
+        model.indexed_fields.split(",").map((field, index) => {
+          keyword = `${keyword} ${newObject.data[field]}`;
+        });
+      }
+      io["keywords"] = keyword;
+      searchableIndex[oldObjectIndex] = io;
     }
-    io["keywords"] = keyword;
-    searchableIndex[oldObjectIndex] = io;
   } else if (change.operationType === "replace") {
     console.log("Change, rebuilding index.");
 
@@ -141,7 +143,7 @@ const updateObjectIndex = async (change, models) => {
 
     const io = {
       primary: newObject.data[model?.primary],
-      type: model.key,
+      type: model?.key,
       id: newObject._id.toString(),
     };
     let keyword = `${newObject.data[model.primary]}`;
