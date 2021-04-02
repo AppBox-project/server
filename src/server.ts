@@ -14,7 +14,7 @@ import executeSignInApi from "./API/signIn";
 import PushNotificationSender from "./Utils/Utils/Notifications";
 const bodyParser = require("body-parser");
 const YAML = require("yaml");
-import DatabaseModel from "./Utils/Classes/DatabaseModel";
+import DatabaseModel from "appbox-formulas/dist/Classes/DatabaseModel";
 
 // Start up server
 const app = express();
