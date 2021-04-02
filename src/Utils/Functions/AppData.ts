@@ -28,7 +28,7 @@ export default {
     object: string,
     permissionType: "create" | "write" | "read" | "delete" | "update"
   ) => {
-    const model: AppModelType = await models.apppermissions.model.findOne({
+    const model: AppModelType = await models.apppermissions.findOne({
       appId: app,
       objectId: object,
     });

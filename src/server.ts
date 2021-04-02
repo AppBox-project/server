@@ -2,7 +2,6 @@ import * as express from "express";
 import config from "./config";
 var mongoose = require("mongoose");
 import actions from "./Utils/Actions";
-import { map } from "lodash";
 var cors = require("cors");
 const formidableMiddleware = require("express-formidable");
 import f from "./Utils/Functions";
@@ -15,17 +14,7 @@ import executeSignInApi from "./API/signIn";
 import PushNotificationSender from "./Utils/Utils/Notifications";
 const bodyParser = require("body-parser");
 const YAML = require("yaml");
-const webpush = require("web-push");
-
-// Models
-require("./Utils/Models/Models");
-require("./Utils/Models/Archive");
-require("./Utils/Models/Objects");
-require("./Utils/Models/AppPermissions");
-require("./Utils/Models/Attachments");
-require("./Utils/Models/UserSettings");
-require("./Utils/Models/AppSettings");
-require("./Utils/Models/SystemSettings");
+import DatabaseModel from "./Utils/Classes/DatabaseModel";
 
 // Start up server
 const app = express();
@@ -62,67 +51,11 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}`)
     var db = mongoose.connection;
     db.once("open", async function () {
       // Models
-      const models = {
-        models: {
-          model: mongoose.model("Models"),
-          stream: db.collection("models").watch(),
-          listeners: {},
-        },
-        archive: {
-          model: mongoose.model("Archive"),
-          listeners: {},
-        },
-        attachments: {
-          model: mongoose.model("Attachments"),
-          stream: db.collection("attachments").watch(),
-          listeners: {},
-        },
-        objects: {
-          model: mongoose.model("Objects"),
-          stream: db.collection("objects").watch(),
-          listeners: {},
-        },
-        apppermissions: {
-          model: mongoose.model("AppPermissions"),
-        },
-        usersettings: {
-          model: mongoose.model("UserSettings"),
-          stream: db.collection("usersettings").watch(),
-          listeners: {},
-        },
-        appsettings: { model: mongoose.model("AppSettings") },
-        systemsettings: mongoose.model("SystemSettings"),
-      };
-
-      // Change streams
-      models.models.stream.on("change", (change) => {
-        map(models.models.listeners, (listener) => {
-          //@ts-ignore
-          listener(change);
-        });
-      });
-      models.objects.stream.on("change", (change) => {
-        map(models.objects.listeners, (listener, key) => {
-          //@ts-ignore
-          listener(change);
-        });
-      });
-      models.usersettings.stream.on("change", (change) => {
-        map(models.usersettings.listeners, (listener) => {
-          //@ts-ignore
-          listener(change);
-        });
-      });
-      models.attachments.stream.on("change", (change) => {
-        map(models.attachments.listeners, (listener) => {
-          //@ts-ignore
-          listener(change);
-        });
-      });
+      const models = new DatabaseModel(db);
 
       console.log("Connected to database and loaded models.");
 
-      const initialModels = await models.models.model.find();
+      const initialModels = await models.models.model.find({});
       let initialised = true;
       const isConfigured = await models.systemsettings.findOne({
         key: "systemDataVersion",

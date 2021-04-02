@@ -336,7 +336,7 @@ export default [
     key: "allowAppAccess",
     action: async (args, models, socket, socketInfo) => {
       // Todo: only certain people may set this property
-      const permission = await models.apppermissions.model.findOne({
+      const permission = await models.apppermissions.findOne({
         appId: args.appId,
         objectId: args.objectType,
       });
@@ -348,7 +348,7 @@ export default [
           socket.emit(`receive-${args.requestId}`, { success: true });
         });
       } else {
-        new models.apppermissions.model({
+        new models.apppermissions({
           appId: args.appId,
           objectId: args.objectType,
           permissions: [args.permissionType],

@@ -141,7 +141,7 @@ export default [
     action: async (args, models, socket, socketInfo: SocketInfoType) => {
       const returnData = async () => {
         // Check app permissions
-        const permissions = await models.apppermissions.model.findOne({
+        const permissions = await models.apppermissions.findOne({
           appId: args.appId,
           objectId: args.modelId,
         });
@@ -233,7 +233,7 @@ export default [
         //console.log(`App object type request: ${args.requestId}`);
       } else {
         // Regular mode
-        models.apppermissions.model
+        models.apppermissions
           .find({ appId: args.appId, ...args.filter })
           .then((appPermissions) => {
             const promises = [];
@@ -345,7 +345,7 @@ export default [
       } else {
         // Non-root mode
         // First check read permission
-        models.apppermissions.model
+        models.apppermissions
           .findOne({ appId: args.appId, objectId: args.type })
           .then((permission) => {
             if (permission) {
@@ -687,7 +687,7 @@ export default [
     key: "appArchivesObject",
     action: async (args, models, socket, socketInfo: SocketInfoType) => {
       // Filter app permission
-      const permission = await models.apppermissions.model.findOne({
+      const permission = await models.apppermissions.findOne({
         appId: args.appId,
         objectId: args.modelId,
       });
