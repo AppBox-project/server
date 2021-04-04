@@ -1,7 +1,7 @@
 import Functions from ".";
 import { map } from "lodash";
 import { AppModelType } from "appbox-types";
-
+import { Action } from "appbox-formulas";
 export default {
   checkUserObjectRights: async (
     models,
@@ -88,7 +88,7 @@ export default {
         });
 
         // Create the new object
-        const newObject = oldObject.data;
+        let newObject = oldObject.data;
         map(args.newObject, (v, k) => {
           // If this is supposed to be a number, but isn't, parseInt().
           if (
@@ -101,6 +101,35 @@ export default {
           oldObject.markModified(`data.${k}`);
         });
 
+        // Process actions BEFORE save
+        const actions = await models.objects.model.find({
+          objectId: "actions",
+        });
+        await actions.reduce(async (prev, currAction) => {
+          await prev;
+          let triggerVar = undefined;
+          (currAction?.data?.data?.triggers?.data || []).map((trigger) => {
+            if (trigger.model === model.key) {
+              map(args.toChange, (v, k) => {
+                if (trigger.fields.includes(k)) triggerVar = trigger.var;
+              });
+            }
+          });
+          if (triggerVar !== undefined) {
+            console.log(
+              `Action ${currAction.data.name} triggered by change on ${args.objectId}.`
+            );
+            const action = await new Action(currAction.data, models).execute({
+              [triggerVar]: newObject,
+            });
+            const result = action.getVar(triggerVar);
+            newObject = { ...newObject, ...result.data };
+          }
+
+          return currAction;
+        }, actions[0]);
+
+        // Validate
         Functions.data
           .validateData(model, newObject, args.type, models, oldObject)
           .then(

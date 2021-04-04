@@ -1,9 +1,10 @@
-import { map, uniqueId } from "lodash";
+import { map } from "lodash";
 import f from "../Functions";
 import { AppModelType } from "appbox-types";
 import { ModelRuleType } from "../Utils/Types";
 import Formula from "appbox-formulas";
 const uniqid = require("uniqid");
+import { Action } from "appbox-formulas";
 
 // This is the rewritten version of validate data
 const validateNewObject = async (models, newObject, oldObject) => {
@@ -252,7 +253,7 @@ export default {
   ) => {
     models.models.model
       .findOne({ key: args.type })
-      .then((model: AppModelType) => {
+      .then(async (model: AppModelType) => {
         if (model) {
           let hasWriteAccess = false;
 
@@ -266,13 +267,45 @@ export default {
           if (hasWriteAccess) {
             models.objects.model
               .findOne({ _id: args.objectId })
-              .then((entry) => {
+              .then(async (entry) => {
                 // Create the new object
-                const newObject = entry._doc.data;
+                let newObject = entry._doc.data;
                 map(args.toChange, (v, k) => {
                   newObject[k] = args.toChange[k];
                   entry.markModified(`data.${k}`);
                 });
+
+                // Process actions BEFORE save
+                const actions = await models.objects.model.find({
+                  objectId: "actions",
+                });
+                await actions.reduce(async (prev, currAction) => {
+                  await prev;
+                  let triggerVar = undefined;
+                  (currAction?.data?.data?.triggers?.data || []).map(
+                    (trigger) => {
+                      if (trigger.model === model.key) {
+                        map(args.toChange, (v, k) => {
+                          if (trigger.fields.includes(k))
+                            triggerVar = trigger.var;
+                        });
+                      }
+                    }
+                  );
+                  if (triggerVar !== undefined) {
+                    console.log(
+                      `Action ${currAction.data.name} triggered by change on ${args.objectId}.`
+                    );
+                    const action = await new Action(
+                      currAction.data,
+                      models
+                    ).execute({ [triggerVar]: newObject });
+                    const result = action.getVar(triggerVar);
+                    newObject = { ...newObject, ...result.data };
+                  }
+
+                  return currAction;
+                }, actions[0]);
 
                 f.data
                   .validateData(model, newObject, args.type, models, entry._doc)
