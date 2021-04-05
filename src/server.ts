@@ -14,7 +14,8 @@ import executeSignInApi from "./API/signIn";
 import PushNotificationSender from "./Utils/Utils/Notifications";
 const bodyParser = require("body-parser");
 const YAML = require("yaml");
-import DatabaseModel from "appbox-formulas/dist/Classes/DatabaseModel";
+import DatabaseModel from "./Utils/Classes/DatabaseModel";
+import { map } from "lodash";
 
 // Start up server
 const app = express();
@@ -52,6 +53,32 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}`)
     db.once("open", async function () {
       // Models
       const models = new DatabaseModel(db);
+
+      // Change streams
+      models.models.stream.on("change", (change) => {
+        map(models.models.listeners, (listener) => {
+          //@ts-ignore
+          listener(change);
+        });
+      });
+      models.objects.stream.on("change", (change) => {
+        map(models.objects.listeners, (listener, key) => {
+          //@ts-ignore
+          listener(change);
+        });
+      });
+      models.usersettings.stream.on("change", (change) => {
+        map(models.usersettings.listeners, (listener) => {
+          //@ts-ignore
+          listener(change);
+        });
+      });
+      models.attachments.stream.on("change", (change) => {
+        map(models.attachments.listeners, (listener) => {
+          //@ts-ignore
+          listener(change);
+        });
+      });
 
       console.log("Connected to database and loaded models.");
 

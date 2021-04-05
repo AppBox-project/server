@@ -1,5 +1,6 @@
 import { remove, map, pull } from "lodash";
 import f from "../Functions";
+import { Action } from "appbox-formulas";
 
 // Todo sanitize filter input???
 // --> It may be possible to send something else than arrays which may be a way into the database
@@ -386,6 +387,41 @@ export default [
       remove(socketInfo.listeners, (o) => {
         return o === args.requestId;
       });
+    },
+  },
+  {
+    key: "performAction",
+    action: async (args, models, socket, socketInfo) => {
+      const vars = { ...(args.vars || {}) };
+      const action = await models.objects.model.findOne({ _id: args.id });
+      const varsMissing = [];
+      (action?.data?.data?.triggers?.manual?.vars || []).map((v) => {
+        if (!vars[v]) {
+          varsMissing.push(v);
+        }
+      });
+      if (varsMissing.length < 1) {
+        await Object.keys(vars).reduce(
+          // @ts-ignore
+          async (prev, curr) => {
+            await prev;
+            const v = vars[curr];
+            if (typeof v === "object") {
+              vars[curr] = await models.objects.model.find({ _id: { $in: v } });
+            }
+            return curr;
+          },
+          Object.keys(vars)[0]
+        );
+
+        await new Action(action.data, models).execute(vars);
+      } else {
+        socket.emit(`receive-${args.requestId}`, {
+          success: false,
+          reason: "required-var-missing",
+          vars: varsMissing,
+        });
+      }
     },
   },
 ];
