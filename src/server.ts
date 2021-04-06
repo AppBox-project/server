@@ -14,8 +14,8 @@ import executeSignInApi from "./API/signIn";
 import PushNotificationSender from "./Utils/Utils/Notifications";
 const bodyParser = require("body-parser");
 const YAML = require("yaml");
-//import { DatabaseModel } from "appbox-formulas";
-import DatabaseModel from "./Utils/Classes/DatabaseModel";
+import { DatabaseModel } from "appbox-formulas"; // Production
+//import DatabaseModel from "./Utils/Classes/DatabaseModel"; // With yarn link
 import { map } from "lodash";
 
 // Start up server
