@@ -255,6 +255,11 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}`)
       });
 
       // Serve react
+      app.use(
+        "/custom-service-worker.js",
+        express.static("../Client/build/custom-service-worker.js")
+      );
+
       app.use("/*", express.static("../Client/build"));
 
       http.listen(config.port, () => {
