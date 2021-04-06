@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "appbox-formulas": "^0.0.50",
+    "appbox-formulas": "^0.0.52",
     "axios": "^0.21.1",
     "bcryptjs": "^2.4.3",
     "child_process": "^1.0.2",
