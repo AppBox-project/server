@@ -123,7 +123,12 @@ export default {
               [triggerVar]: newObject,
             });
             const result = action.getVar(triggerVar);
-            newObject = { ...newObject, ...result.data };
+            console.log(result);
+
+            newObject = {
+              ...newObject,
+              ...(result.data ? result.data : result),
+            };
           }
 
           return currAction;

@@ -301,7 +301,12 @@ export default {
                       models
                     ).execute({ [triggerVar]: newObject });
                     const result = action.getVar(triggerVar);
-                    newObject = { ...newObject, ...result.data };
+
+                    newObject = {
+                      ...(result.data ? result.data : result),
+                      ...newObject,
+                    };
+                    map(newObject, (v, k) => entry.markModified(`data.${k}`));
                   }
 
                   return currAction;
