@@ -191,6 +191,9 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}`)
       });
 
       app.use("/static", express.static("../Client/build/static"));
+      app.use("/custom-service-worker.js", function (req, res) {
+        res.sendFile(`/AppBox/System/Client/build/custom-service-worker.js`);
+      });
       app.use("/:filename.:extension", function (req, res) {
         var filename = req.params.filename;
         var extension = req.params.extension;
@@ -255,12 +258,8 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}`)
       });
 
       // Serve react
-      app.use(
-        "/custom-service-worker.js",
-        express.static("../Client/build/custom-service-worker.js")
-      );
 
-      app.use("/*", express.static("../Client/build"));
+      app.use("/*", express.static("/AppBox/System/Client/build"));
 
       http.listen(config.port, () => {
         console.log(`Server now available at http://localhost:${config.port}`);
