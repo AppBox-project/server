@@ -191,6 +191,8 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}`)
       });
 
       app.use("/static", express.static("../Client/build/static"));
+      app.use("/fontawesome", express.static("../Client/build/fontawesome"));
+
       app.use("/custom-service-worker.js", function (req, res) {
         res.sendFile(`/AppBox/System/Client/build/custom-service-worker.js`);
       });
