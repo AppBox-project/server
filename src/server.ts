@@ -259,7 +259,7 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}`)
       });
 
       // Serve react
-      app.use("/fontawesome/*", express.static("../Client/build/fontawesome"));
+      app.use("/fontawesome", express.static("../Client/build/fontawesome"));
       app.use("/*", express.static("/AppBox/System/Client/build"));
 
       http.listen(config.port, () => {
