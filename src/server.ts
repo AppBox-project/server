@@ -109,7 +109,10 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}`)
       // Todo this can be less ugly
       // Public files
       app.use("/public", express.static("/AppBox/Files/Public"));
-      app.use("/fontawesome", express.static("../Client/build/fontawesome"));
+      app.use(
+        "/fontawesome",
+        express.static("/AppBox/System/Client/build/fontawesome")
+      );
 
       // Sites
       app.use(bodyParser.urlencoded({ extended: true }));
