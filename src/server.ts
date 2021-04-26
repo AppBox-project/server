@@ -38,13 +38,6 @@ console.log(
     process.env.DBURL || "localhost:27017"
   }`
 );
-const clientRoot = require("path").join(
-  __dirname,
-  "..",
-  "..",
-  "Client",
-  "build"
-);
 
 Axios.get(`http://${process.env.DBURL || "localhost:27017"}`)
   .then((res) => {
@@ -200,10 +193,31 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}`)
         }
       });
 
-      app.use("/static", express.static(`${clientRoot}/build/static`));
+      app.use(
+        "/static",
+        express.static(
+          require("path").join(
+            __dirname,
+            "..",
+            "..",
+            "Client",
+            "build",
+            "static"
+          )
+        )
+      );
 
       app.use("/custom-service-worker.js", function (req, res) {
-        res.sendFile(`${clientRoot}/build/custom-service-worker.js`);
+        res.sendFile(
+          require("path").join(
+            __dirname,
+            "..",
+            "..",
+            "Client",
+            "build",
+            "custom-service-worker.js"
+          )
+        );
       });
       app.use("/:filename.:extension", function (req, res) {
         var filename = req.params.filename;
@@ -269,7 +283,12 @@ Axios.get(`http://${process.env.DBURL || "localhost:27017"}`)
       });
 
       // Serve react
-      app.use("/*", express.static(clientRoot));
+      app.use(
+        "/*",
+        express.static(
+          require("path").join(__dirname, "..", "..", "Client", "build")
+        )
+      );
 
       http.listen(config.port, () => {
         console.log(`Server now available at http://localhost:${config.port}`);
