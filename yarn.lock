@@ -1699,10 +1699,10 @@ negotiator@0.6.2:
   resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.2.tgz#feacf7ccf525a77ae9634436a64883ffeca346fb"
   integrity sha512-hZXc7K2e+PgeI1eDBe/10Ard4ekbfrrqG8Ep+8Jmf4JID2bNg7NvCPOZN+kfF574pFQI7mum2AUqDidoKqcTOw==
 
-node-2fa@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/node-2fa/-/node-2fa-2.0.1.tgz#3ba5a73352d571c9545d6065fd29dbad44c96ce7"
-  integrity sha512-esvVPbgzGKWKdKaSLroJLSi6pzGavgCWdsQzPML3SGNzenjLCsa5FFGxgytL7oiD+/Ivhr8kfH1gSFaGLgYQqQ==
+node-2fa@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/node-2fa/-/node-2fa-2.0.2.tgz#d46fecc8fa45c23f74f6ddc087f4a117096fa022"
+  integrity sha512-fg0D8sM42/BEOztQUoaiV2ci775okITm7aGDAGd69a1Tfwkn07MK6h12kOQnA/Ay5viHhoi1xeu3LmXpPUTbbA==
   dependencies:
     notp "^2.0.3"
     thirty-two "1.0.2"
