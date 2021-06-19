@@ -20,6 +20,9 @@ mongoose.model(
       fields: {},
       lists: {},
       rules: {},
+      duplicate_rules: [
+        { label: String, required: [String], optional: [String], mode: String },
+      ],
       api: {
         read: { active: Boolean, endpoint: String, authentication: String },
         create: { active: Boolean, endpoint: String, authentication: String },
