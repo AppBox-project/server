@@ -12,7 +12,7 @@
     "global": "^4.4.0",
     "html-pdf": "^3.0.1",
     "lodash": "^4.17.21",
-    "mongoose": "^5.13.0",
+    "mongoose": "^6.2.9",
     "node-2fa": "^2.0.2",
     "node-http-ping": "^0.3.1",
     "nodemon": "^2.0.9",
